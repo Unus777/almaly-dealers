@@ -22,12 +22,14 @@
     или сохраните его в PDF. Готовый бланк можно сразу отправить менеджеру в WhatsApp или почтой.</p>
 
   <div class="block">
-    <h2>Позиции заказа</h2>
+    <h2><i>1</i>Позиции заказа</h2>
+    <p class="lead">Количество упаковок и склад можно изменить прямо здесь.</p>
     <div id="items"></div>
   </div>
 
   <div class="block">
-    <h2>Заказчик</h2>
+    <h2><i>2</i>Заказчик</h2>
+    <p class="lead">Эти данные попадут в шапку бланка.</p>
     <div class="form-grid">
       <div class="field"><label>Наименование заказчика <span class="req">*</span></label>
         <input id="f-customer" placeholder="ООО «Название» / ИП Фамилия" required></div>
@@ -42,7 +44,8 @@
   </div>
 
   <div class="block">
-    <h2>Доставка и оплата</h2>
+    <h2><i>3</i>Доставка и оплата</h2>
+    <p class="lead">Условия подтверждает менеджер после проверки остатков.</p>
     <div class="form-grid">
       <div class="field"><label>Способ доставки</label>
         <select id="f-delivery">
@@ -63,6 +66,9 @@
         <input id="f-note" placeholder="Например: нужен паллетный борт"></div>
     </div>
   </div>
+
+  <div class="section-title"><h2>Готовый бланк</h2></div>
+  <div id="summary"></div>
 
   <div class="actions">
     <button class="btn primary" id="print">Печать / сохранить PDF</button>

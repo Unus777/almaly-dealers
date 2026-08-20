@@ -45,7 +45,8 @@ async function renderCatalog() {
       (!s || (t.name + ' ' + t.art).toLowerCase().includes(s)));
     grid.innerHTML = list.map(t => `
       <a class="card" href="tile.html?a=${t.art}">
-        <div class="ph">${t.photos.length ? `<img src="${img(t, 0, true)}" alt="${esc(t.name)}" loading="lazy">` : 'фото скоро'}</div>
+        <div class="ph">${t.is_new ? '<span class="badge-new">Новинка</span>' : ''}
+          ${t.photos.length ? `<img src="${img(t, 0, true)}" alt="${esc(t.name)}" loading="lazy">` : 'фото скоро'}</div>
         <div class="b">
           <h3>${esc(t.name)}</h3>
           <div class="art">${t.art}</div>
@@ -65,6 +66,8 @@ async function renderCatalog() {
   });
   [q, srf].forEach(el => el.addEventListener('input', draw));
   draw();
+  $('#s-models').textContent = tiles.length;
+  $('#s-new').textContent = tiles.filter(t => t.is_new).length;
   $('#stat').textContent = `${tiles.length} моделей в наличии и под заказ`;
 }
 
@@ -89,7 +92,7 @@ async function renderTile() {
           : '<div class="main-ph"><div class="ph" style="aspect-ratio:4/3">фото скоро</div></div>'}
       </div>
       <div class="side">
-        <h1>${esc(t.name)}</h1>
+        <h1>${esc(t.name)}${t.is_new ? ' <span class="tag new">Новинка</span>' : ''}</h1>
         <div class="art">${t.art}</div>
 
         <p class="h2">Характеристики</p>
@@ -107,6 +110,7 @@ async function renderTile() {
         </table>
 
         <div class="add">
+          <p class="h3">Добавить в заказ</p>
           <div class="row">
             <div class="field"><label>Упаковок</label>
               <input id="packs" type="number" min="1" step="1" value="10"></div>
@@ -195,6 +199,19 @@ function renderItems() {
       <td>${nf(tt.sqm)} м²</td><td colspan="2">${tt.kg ? nf(tt.kg, 0) + ' кг' : ''}</td></tr></tfoot>
   </table>`;
   renderSheet();
+  renderSummary();
+}
+
+function renderSummary() {
+  const box = document.getElementById('summary');
+  if (!box) return;
+  const t = totals(getCart());
+  box.innerHTML = !t.packs ? '' : `<div class="summary">
+    <div><b>${getCart().length}</b><span>позиций</span></div>
+    <div><b>${t.packs}</b><span>упаковок</span></div>
+    <div><b>${nf(t.sqm)}</b><span>м² всего</span></div>
+    ${t.kg ? `<div><b>${nf(t.kg, 0)}</b><span>кг ориентировочно</span></div>` : ''}
+  </div>`;
 }
 
 function renderSheet() {
@@ -203,11 +220,12 @@ function renderSheet() {
   $('#sheet').innerHTML = !cart.length ? '' : `
   <div class="sheet" id="print-sheet">
     <div class="top">
-      <div>
+      <div class="mark"><svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="14" fill="#111"/><path d="M50 20 66 50 50 80 34 50z" fill="#c9a227"/></svg>
+        <div>
         <h1>Бланк заказа</h1>
         <div class="company">${COMPANY.name} · ${COMPANY.tagline}<br>
           ${COMPANY.phone} · ${COMPANY.email}</div>
-      </div>
+      </div></div>
       <div class="no">заказ<b>№ ${orderNo()}</b>от ${dateTxt}</div>
     </div>
     <div class="pairs">

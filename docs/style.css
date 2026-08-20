@@ -1,7 +1,8 @@
 :root{
   --bg:#0c0e10; --panel:#14171a; --panel2:#191d21; --line:#272b31; --line2:#343940;
   --tx:#f4f2ef; --dim:#9aa1a8; --accent:#c9a227; --accent-soft:rgba(201,162,39,.14);
-  --ok:#84cf98; --radius:16px; --max:1280px;
+  --ok:#84cf98; --radius:18px; --max:1280px;
+  --gold-line:linear-gradient(90deg,transparent,rgba(201,162,39,.55),transparent);
   --serif:"Cormorant Garamond",Georgia,serif;
   --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
 }
@@ -33,7 +34,13 @@ header{position:sticky;top:0;z-index:20;background:rgba(12,14,16,.88);
 .hero-in{position:relative;z-index:1;width:100%;max-width:var(--max);margin:0 auto;padding:58px 24px 40px}
 .eyebrow{color:var(--accent);font-size:12px;letter-spacing:.28em;text-transform:uppercase;margin:0 0 12px}
 .hero h1{margin:0 0 12px;font-size:clamp(34px,5.4vw,58px);line-height:1.06}
-.hero p{margin:0;color:#d6d3ce;max-width:56ch}
+.hero p{margin:0;color:#d6d3ce;max-width:56ch;font-size:17px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.hero-stats{display:flex;gap:34px;flex-wrap:wrap;margin-top:30px;padding-top:22px;
+  border-top:1px solid rgba(255,255,255,.12)}
+.hero-stats div{display:flex;flex-direction:column}
+.hero-stats b{font-family:var(--serif);font-size:27px;line-height:1.1}
+.hero-stats span{color:var(--dim);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase}
 
 .tools{position:sticky;top:60px;z-index:15;display:flex;flex-wrap:wrap;gap:10px;align-items:center;
   padding:18px 0;background:linear-gradient(180deg,var(--bg) 78%,rgba(12,14,16,0))}
@@ -52,10 +59,19 @@ input[type=search]{flex:1;min-width:220px}
 .ph{aspect-ratio:3/4;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#5f666d;
   font-size:12px;letter-spacing:.14em;text-transform:uppercase;
   background:radial-gradient(120% 90% at 50% 0%,#1b1f23 0%,#101316 70%)}
+.ph{position:relative}
 .ph img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
-.card:hover .ph img{transform:scale(1.05)}
+.card:hover .ph img{transform:scale(1.06)}
+.ph::after{content:"Открыть и заказать";position:absolute;inset:auto 0 0 0;padding:14px;text-align:center;
+  font-size:13px;letter-spacing:.06em;color:#fff;background:linear-gradient(0deg,rgba(10,12,14,.92),transparent);
+  opacity:0;transform:translateY(8px);transition:.25s}
+.card:hover .ph::after{opacity:1;transform:none}
+.badge-new{position:absolute;top:12px;left:12px;z-index:2;background:var(--accent);color:#191919;
+  font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:999px}
 .card .b{padding:16px 18px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
 .card h3{margin:0;font-size:21px;line-height:1.2}
+.tag.new{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);
+  font-size:10.5px;letter-spacing:.1em;text-transform:uppercase}
 .art{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--accent);letter-spacing:.06em}
 .meta{color:var(--dim);font-size:12.5px;display:flex;gap:7px;flex-wrap:wrap}
 .tag{border:1px solid var(--line2);border-radius:999px;padding:3px 10px}
@@ -86,7 +102,11 @@ input[type=search]{flex:1;min-width:220px}
 .spec{width:100%;border-collapse:collapse;margin:12px 0 0}
 .spec th,.spec td{text-align:left;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
 .spec th{color:var(--dim);font-weight:400;width:48%}
-.add{margin-top:24px;background:var(--panel2);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.add{margin-top:24px;background:var(--panel2);border:1px solid var(--line2);border-radius:var(--radius);
+  padding:20px;position:relative;overflow:hidden}
+.add::before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:var(--gold-line)}
+.add .h3{margin:0 0 14px;font-family:var(--sans);font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--dim);font-weight:600}
 .add .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
 .field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:130px}
 .field label{color:var(--dim);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
@@ -96,8 +116,14 @@ input[type=search]{flex:1;min-width:220px}
 
 /* бланк заказа */
 .form-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
-.block{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin-bottom:20px}
-.block h2{margin:0 0 16px;font-size:24px}
+.block{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px;
+  margin-bottom:20px;position:relative;overflow:hidden}
+.block::before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:var(--gold-line)}
+.block h2{margin:0 0 4px;font-size:25px;display:flex;align-items:center;gap:12px}
+.block h2 i{font-style:normal;font-family:var(--sans);font-size:12px;font-weight:600;letter-spacing:.1em;
+  color:var(--accent);border:1px solid var(--accent);border-radius:999px;width:26px;height:26px;
+  display:inline-flex;align-items:center;justify-content:center}
+.block .lead{color:var(--dim);font-size:13.5px;margin:0 0 18px}
 .items{width:100%;border-collapse:collapse}
 .items th{text-align:left;color:var(--dim);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;
   padding:0 10px 10px 0;font-weight:600}
@@ -109,6 +135,11 @@ input[type=search]{flex:1;min-width:220px}
 .rm{background:none;border:0;color:var(--dim);font-size:17px;cursor:pointer;padding:4px 8px}
 .rm:hover{color:#e88}
 .empty{color:var(--dim);text-align:center;padding:40px 0}
+.summary{display:flex;gap:26px;flex-wrap:wrap;align-items:center;background:var(--panel2);
+  border:1px solid var(--line2);border-radius:var(--radius);padding:18px 24px;margin-bottom:20px}
+.summary div{display:flex;flex-direction:column}
+.summary b{font-family:var(--serif);font-size:26px;line-height:1.1}
+.summary span{color:var(--dim);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase}
 .actions{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0 60px}
 .note{color:var(--dim);font-size:13px;margin:10px 0 0}
 .req{color:var(--accent)}
@@ -118,7 +149,10 @@ input[type=search]{flex:1;min-width:220px}
 .sheet{background:#fff;color:#111;border-radius:12px;padding:34px 38px;margin-bottom:24px;
   font:13.5px/1.5 var(--sans)}
 .sheet h1{font-family:var(--serif);font-size:26px;margin:0}
-.sheet .top{display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid #111;padding-bottom:14px;margin-bottom:18px}
+.sheet .top{display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid #111;
+  padding-bottom:16px;margin-bottom:20px;align-items:flex-start}
+.sheet .mark{display:flex;gap:12px;align-items:center}
+.sheet .mark svg{width:38px;height:38px;flex:none}
 .sheet .company{font-size:12px;color:#555;line-height:1.5}
 .sheet .no{text-align:right;font-size:12px;color:#555}
 .sheet .no b{display:block;font-size:19px;color:#111;font-family:var(--serif)}
@@ -133,6 +167,17 @@ input[type=search]{flex:1;min-width:220px}
 .sheet .signs{display:flex;gap:40px;margin-top:34px;font-size:12.5px;color:#555}
 .sheet .signs div{flex:1;border-top:1px solid #999;padding-top:6px}
 .sheet .foot{margin-top:22px;font-size:11px;color:#777}
+
+.steps{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));padding:36px 0 6px}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;
+  position:relative;overflow:hidden}
+.step::before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:var(--gold-line)}
+.step b{display:block;font-family:var(--serif);font-size:34px;color:var(--accent);line-height:1;margin-bottom:10px}
+.step h3{margin:0 0 6px;font-size:20px}
+.step p{margin:0;color:var(--dim);font-size:14px}
+.section-title{display:flex;align-items:center;gap:16px;margin:46px 0 4px}
+.section-title h2{margin:0;font-size:30px;white-space:nowrap}
+.section-title::after{content:"";flex:1;height:1px;background:var(--gold-line)}
 
 footer{border-top:1px solid var(--line);color:var(--dim);font-size:13px;padding:28px 0 46px}
 .foot{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
