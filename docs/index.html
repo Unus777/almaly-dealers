@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Алмалы-Керамик — каталог для дилеров</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230c0e10'/><path d='M50 20 66 50 50 80 34 50z' fill='%23c9a227'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<header><div class="wrap head">
+  <a class="logo" href="index.html">Алмалы<span>·</span>Керамик</a>
+  <span class="sub">Оптовый каталог для дилеров</span>
+  <span class="right">
+    <a class="navlink" href="index.html">Каталог</a>
+    <a class="navlink cart" href="order.html">Заказ<b id="cart-count">0</b></a>
+  </span>
+</div></header>
+
+<section class="hero">
+  <div class="hero-in">
+    <p class="eyebrow">Оптовые поставки керамогранита</p>
+    <h1>Каталог для дилеров</h1>
+    <p>Выбирайте модели, указывайте количество упаковок и склад — бланк заказа сформируется автоматически.</p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="tools">
+    <input type="search" id="q" placeholder="Поиск: название или артикул" aria-label="Поиск">
+    <div class="chips" id="fmt" role="group" aria-label="Формат"></div>
+    <select id="srf" aria-label="Покрытие"><option value="">Все покрытия</option></select>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer><div class="wrap foot">
+  <span>ООО «Алмалы-Керамик» · оптовый отдел</span>
+  <span id="stat"></span>
+</div></footer>
+<div id="toast"></div>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>renderCatalog()</script>

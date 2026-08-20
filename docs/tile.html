@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Плитка — Алмалы-Керамик</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230c0e10'/><path d='M50 20 66 50 50 80 34 50z' fill='%23c9a227'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<header><div class="wrap head">
+  <a class="logo" href="index.html">Алмалы<span>·</span>Керамик</a>
+  <span class="sub">Оптовый каталог для дилеров</span>
+  <span class="right">
+    <a class="navlink" href="index.html">Каталог</a>
+    <a class="navlink cart" href="order.html">Заказ<b id="cart-count">0</b></a>
+  </span>
+</div></header>
+
+<main class="wrap" id="tile"></main>
+<footer><div class="wrap foot"><span>ООО «Алмалы-Керамик» · оптовый отдел</span>
+  <a class="navlink" href="index.html">Весь каталог</a></div></footer>
+<div id="toast"></div>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>renderTile()</script>
