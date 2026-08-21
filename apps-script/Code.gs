@@ -4,7 +4,7 @@
  *
  * Настройка: см. apps-script/README.md
  */
-var ADMIN_CODE = 'almaly2026';                 // ← придумайте свой код для продавцов
+var ADMIN_CODE = 'admin';                      // ← пароль продавца из docs/config.js (сейчас admin)
 var NOTIFY_EMAIL = '';                         // ← почта для уведомлений, можно оставить пустой
 var SHEET = 'Заявки';
 
