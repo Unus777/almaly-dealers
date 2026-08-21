@@ -9,8 +9,29 @@ const STATUS = {new: 'Новая', work: 'В работе', done: 'Отгруж�
 const totals = items => (items || []).reduce((a, i) => ({packs: a.packs + i.packs,
   sqm: a.sqm + i.packs * i.sqm, kg: a.kg + i.packs * (i.kg || 0)}), {packs: 0, sqm: 0, kg: 0});
 
-let code = sessionStorage.getItem('almaly_admin_code') || localStorage.getItem('almaly_admin_code') || '';
+const JOURNAL = 'almaly_admin_orders';
+const LOCAL = !ORDERS_API;                 // без сервера — журнал живёт в браузере продавца
+let code = localStorage.getItem('almaly_admin_code') || '';
 let orders = [];
+
+const readLocal = () => { try { return JSON.parse(localStorage.getItem(JOURNAL)) || []; } catch { return []; } };
+const writeLocal = list => localStorage.setItem(JOURNAL, JSON.stringify(list));
+
+/** Заявка приходит ссылкой из WhatsApp: admin.html#o=<данные> — принимаем её сразу. */
+function takeFromLink() {
+  const m = location.hash.match(/#o=(.+)$/);
+  if (!m) return null;
+  history.replaceState(null, '', location.pathname);
+  let o;
+  try { o = JSON.parse(decodeURIComponent(escape(atob(m[1])))); }
+  catch { toast('Ссылка на заявку повреждена'); return null; }
+  const list = readLocal();
+  if (list.some(x => x.no === o.no)) { toast(`Заявка № ${o.no} уже в журнале`); return o.no; }
+  list.unshift({...o, status: 'new', received: new Date().toISOString()});
+  writeLocal(list);
+  toast(`Новая заявка № ${o.no} — ${o.customer}`);
+  return o.no;
+}
 
 const toast = t => { const el = $('#toast'); el.textContent = t; el.style.display = 'block';
   clearTimeout(toast.t); toast.t = setTimeout(() => el.style.display = 'none', 3500); };
@@ -51,9 +72,11 @@ function draw() {
         </div>
         <div class="o-act">
           <span class="status s-${o.status}">${STATUS[o.status] || o.status}</span>
+          ${LOCAL ? '' : ''}
           <select data-act="status">${Object.entries(STATUS).map(([k, v]) =>
             `<option value="${k}" ${k === o.status ? 'selected' : ''}>${v}</option>`).join('')}</select>
           <button class="btn" data-act="print">Лист</button>
+          <button class="btn ghost" data-act="del" title="Убрать из журнала">✕</button>
         </div>
       </div>
 
@@ -139,6 +162,7 @@ function csv() {
 
 /* ---------- загрузка ---------- */
 async function refresh(quiet) {
+  if (LOCAL) { orders = readLocal(); draw(); if (!quiet) toast(`Заявок в журнале: ${orders.length}`); return; }
   try {
     const d = await api({action: 'list'});
     orders = d.orders || [];
@@ -151,11 +175,13 @@ async function refresh(quiet) {
 }
 
 async function enter() {
-  if (!ORDERS_API) {
-    $('#gate-note').innerHTML = 'Приём заявок ещё не подключён. Разверните скрипт из папки ' +
-      '<b>apps-script</b> и впишите его адрес в <b>docs/config.js</b> — после этого заявки начнут ' +
-      'приходить сюда автоматически.';
-    $('#code').hidden = $('#login').hidden = true;
+  if (LOCAL) {                       // журнал в браузере: вход без кода
+    $('#gate').hidden = true; $('#app').hidden = false;
+    $('#refresh').hidden = $('#logout').hidden = false;
+    $('#logout').textContent = 'Очистить журнал';
+    $('#mode-note').innerHTML = 'Заявки попадают сюда, когда вы открываете ссылку из WhatsApp — ' +
+      'она добавляется в журнал автоматически. Журнал хранится в этом браузере.';
+    await refresh(true);
     return;
   }
   try {
@@ -176,7 +202,13 @@ $('#login').addEventListener('click', () => {
   enter();
 });
 $('#code').addEventListener('keydown', e => e.key === 'Enter' && $('#login').click());
-$('#logout').addEventListener('click', () => { localStorage.removeItem('almaly_admin_code'); location.reload(); });
+$('#logout').addEventListener('click', () => {
+  if (LOCAL) {
+    if (!confirm('Удалить все заявки из журнала этого браузера?')) return;
+    localStorage.removeItem(JOURNAL);
+  } else localStorage.removeItem('almaly_admin_code');
+  location.reload();
+});
 $('#refresh').addEventListener('click', () => refresh());
 $('#q').addEventListener('input', draw);
 $('#st').addEventListener('click', e => {
@@ -186,17 +218,27 @@ $('#st').addEventListener('click', e => {
 });
 $('#csv').addEventListener('click', csv);
 $('#orders').addEventListener('click', e => {
-  const b = e.target.closest('button[data-act=print]'); if (!b) return;
-  printOrder(orders.find(o => o.no === b.closest('.order').dataset.no));
+  const b = e.target.closest('button[data-act]'); if (!b) return;
+  const no = b.closest('.order').dataset.no;
+  if (b.dataset.act === 'print') return printOrder(orders.find(o => o.no === no));
+  if (b.dataset.act === 'del') {
+    if (!confirm(`Убрать заявку № ${no} из журнала?`)) return;
+    orders = orders.filter(o => o.no !== no);
+    if (LOCAL) writeLocal(orders);
+    draw();
+  }
 });
 $('#orders').addEventListener('change', async e => {
   const sel = e.target.closest('[data-act=status]'); if (!sel) return;
   const no = sel.closest('.order').dataset.no;
   try {
-    await api({action: 'status', no, status: sel.value});
+    if (!LOCAL) await api({action: 'status', no, status: sel.value});
     orders.find(o => o.no === no).status = sel.value;
+    if (LOCAL) writeLocal(orders);
     draw(); toast(`Заявка № ${no}: ${STATUS[sel.value]}`);
   } catch (err) { toast('Не удалось изменить статус: ' + err.message); }
 });
 
-if (code && ORDERS_API) enter(); else if (!ORDERS_API) enter();
+const incomingNo = takeFromLink();
+if (LOCAL || code) enter();
+if (incomingNo) addEventListener('load', () => draw());

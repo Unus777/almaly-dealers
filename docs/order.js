@@ -120,13 +120,19 @@ function validate() {
   return false;
 }
 
+/** Ссылка на заявку для панели продавца: все данные внутри адреса, сервер не нужен. */
+const adminLink = o => location.origin + location.pathname.replace(/order\.html$/, 'admin.html') +
+  '#o=' + btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+
 async function submitOrder() {
   if (!validate()) return;
   const o = currentOrder();
   const btn = $('#send');
-  if (!ORDERS_API) {          // сервер не подключён — отдаём заявку менеджеру напрямую
-    open(`https://wa.me/${COMPANY.whatsapp}?text=` + encodeURIComponent(orderText(o)), '_blank');
-    return done(o, 'Заявка открыта в WhatsApp — отправьте сообщение менеджеру.');
+  if (!ORDERS_API) {          // без сервера: заявка уходит менеджеру ссылкой в WhatsApp
+    const link = adminLink(o);
+    open(`https://wa.me/${COMPANY.whatsapp}?text=` +
+      encodeURIComponent(orderText(o) + '\n\nЗаявка для панели продавца:\n' + link), '_blank');
+    return done(o, 'Заявка отправлена менеджеру в WhatsApp.', link);
   }
   btn.disabled = true; btn.textContent = 'Отправляю…';
   try {
@@ -142,7 +148,7 @@ async function submitOrder() {
 }
 
 /** Экран «заявка отправлена»: номер, печать листа, новая заявка. */
-function done(o, message) {
+function done(o, message, link) {
   localStorage.setItem('almaly_last_order', JSON.stringify(o));
   localStorage.removeItem(CART); localStorage.removeItem('almaly_order_no');
   updateCount();
@@ -153,10 +159,17 @@ function done(o, message) {
       <p>${esc(message)} Сохраните упаковочный лист — он пригодится при отгрузке.</p>
       <div class="actions" style="justify-content:center">
         <button class="btn primary" onclick="print()">Скачать PDF · упаковочный лист</button>
+        ${link ? '<button class="btn" id="copy-link">Скопировать ссылку для менеджера</button>' : ''}
         <a class="btn" href="index.html">Новая заявка</a>
       </div>
+      ${link ? '<p class="lead" style="margin:6px auto 0;text-align:center">Если WhatsApp не открылся, ' +
+        'скопируйте ссылку и отправьте её менеджеру любым способом.</p>' : ''}
     </div>`;
   $('#sheet').innerHTML = sheetHtml(o);
+  $('#copy-link')?.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(link);
+    toast('Ссылка скопирована — отправьте её менеджеру');
+  });
   scrollTo({top: 0, behavior: 'smooth'});
 }
 
