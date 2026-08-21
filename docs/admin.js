@@ -76,7 +76,7 @@ function draw() {
       <div class="o-hd">
         <div>
           <b>№ ${esc(o.no)}</b>
-          <span class="when">от ${fmtDate(o.date)} · получена ${fmtWhen(o.received)}</span>
+          <span class="when">получена ${fmtWhen(o.received)}</span>
         </div>
         <div class="o-act">
           <span class="status s-${o.status}">${STATUS[o.status] || o.status}</span>
@@ -128,7 +128,7 @@ function printOrder(o) {
         <div><h1>Заявка на отгрузку</h1>
           <div class="company">${COMPANY.name} · ${COMPANY.tagline}<br>${COMPANY.phone} · ${COMPANY.email}</div></div>
       </div>
-      <div class="no">заявка<b>№ ${esc(o.no)}</b>от ${fmtDate(o.date)}</div>
+      <div class="no">заявка<b>№ ${esc(o.no)}</b>от ${fmtWhen(o.received).split(',')[0]}</div>
     </div>
     <div class="pairs">
       <div class="pair"><span>Заказчик</span>${esc(o.customer)}</div>
