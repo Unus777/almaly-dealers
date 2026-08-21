@@ -249,15 +249,18 @@ $('#st').addEventListener('click', e => {
   draw();
 });
 $('#csv').addEventListener('click', csv);
-$('#orders').addEventListener('click', e => {
+$('#orders').addEventListener('click', async e => {
   const b = e.target.closest('button[data-act]'); if (!b) return;
   const no = b.closest('.order').dataset.no;
   if (b.dataset.act === 'print') return printOrder(orders.find(o => o.no === no));
   if (b.dataset.act === 'del') {
-    if (!confirm(`Убрать заявку № ${no} из журнала?`)) return;
-    orders = orders.filter(o => o.no !== no);
-    if (LOCAL) writeLocal(orders);
-    draw();
+    if (!confirm(`Убрать заявку № ${no}?`)) return;
+    try {
+      if (!LOCAL) await api({action: 'delete', no});
+      orders = orders.filter(o => o.no !== no);
+      if (LOCAL) writeLocal(orders);
+      draw();
+    } catch (err) { toast('Не удалось удалить: ' + err.message); }
   }
 });
 $('#orders').addEventListener('change', async e => {

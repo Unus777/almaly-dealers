@@ -11,9 +11,9 @@ const COMPANY = {
 /* Каталог берём из витрины с QR-кодами — один источник фото и остатков. */
 const CATALOG = 'https://unus777.github.io/almaly-tiles/';
 
-/* Приём заявок: адрес веб-приложения Google Apps Script (см. apps-script/README.md).
-   Пока пусто — заявки приходят ссылкой из WhatsApp и хранятся в браузере продавца. */
-const ORDERS_API = '';
+/* Приём заявок: веб-приложение Google Apps Script, заявки падают в Google-таблицу.
+   Если адрес очистить, сайт вернётся в режим «заявка ссылкой в WhatsApp». */
+const ORDERS_API = 'https://script.google.com/macros/s/AKfycbyyge4hKLR9K8nS1ajkHkkk2Ytahjzkv4scpKWTdy_ICEJxA8kbFVifXywbZWLJYw-3CQ/exec';
 
 /* Доступ в панель продавца. Логины и пароли меняйте здесь.
    Это простая защита от посторонних глаз: страница статическая, и значения видно в исходном коде,
