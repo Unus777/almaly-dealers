@@ -2,82 +2,86 @@
 <html lang="ru">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Бланк заказа — Алмалы-Керамик</title>
+<title>Оформление заявки — Алмалы-Керамик</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230c0e10'/><path d='M50 20 66 50 50 80 34 50z' fill='%23c9a227'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+
 <header><div class="wrap head">
   <a class="logo" href="index.html">Алмалы<span>·</span>Керамик</a>
-  <span class="sub">Бланк заказа</span>
-  <span class="right">
-    <a class="navlink" href="index.html">← Продолжить выбор</a>
-  </span>
+  <span class="sub">Оформление заявки</span>
+  <span class="right"><a class="navlink" href="index.html">← Продолжить выбор</a></span>
 </div></header>
 
 <main class="wrap">
-  <h1 style="font-size:34px;margin:26px 0 4px">Бланк заказа</h1>
-  <p class="note" style="margin-bottom:22px">Заполните данные, проверьте позиции и распечатайте бланк
-    или сохраните его в PDF. Готовый бланк можно сразу отправить менеджеру в WhatsApp или почтой.</p>
+  <div id="flow">
+    <div class="steps-line">
+      <span class="is-done">Каталог</span><span class="is-done">Объём в м²</span>
+      <span class="is-now">Оформление</span><span>Заявка отправлена</span>
+    </div>
 
-  <div class="block">
-    <h2><i>1</i>Позиции заказа</h2>
-    <p class="lead">Количество упаковок и склад можно изменить прямо здесь.</p>
-    <div id="items"></div>
-  </div>
+    <h1 class="page-title">Оформление заявки</h1>
+    <p class="lead">Проверьте позиции, заполните данные — заявка уйдёт менеджеру, а упаковочный лист
+      с номером заявки можно сохранить в PDF.</p>
 
-  <div class="block">
-    <h2><i>2</i>Заказчик</h2>
-    <p class="lead">Эти данные попадут в шапку бланка.</p>
-    <div class="form-grid">
-      <div class="field"><label>Наименование заказчика <span class="req">*</span></label>
-        <input id="f-customer" placeholder="ООО «Название» / ИП Фамилия" required></div>
-      <div class="field"><label>Контактное лицо <span class="req">*</span></label>
-        <input id="f-person" placeholder="Имя"></div>
-      <div class="field"><label>Телефон <span class="req">*</span></label>
-        <input id="f-phone" type="tel" placeholder="+7 ___ ___-__-__"></div>
-      <div class="field"><label>Город / адрес</label><input id="f-city" placeholder="Москва"></div>
-      <div class="field"><label>Дата заказа</label><input id="f-date" type="date"></div>
-      <div class="field"><label>Желаемая дата отгрузки</label><input id="f-ship" type="date"></div>
+    <div class="block">
+      <h2><i>1</i>Позиции</h2>
+      <p class="lead">Метры округляются до целых упаковок — отгружаем только полными упаковками.</p>
+      <div id="items"></div>
+      <div id="summary"></div>
+    </div>
+
+    <div class="block">
+      <h2><i>2</i>Данные заказчика</h2>
+      <div class="form-grid">
+        <div class="field"><label>Наименование заказчика <span class="req">*</span></label>
+          <input id="f-customer" placeholder="ООО «Название» / ИП Фамилия"></div>
+        <div class="field"><label>ИНН</label><input id="f-inn" inputmode="numeric" placeholder="10 или 12 цифр"></div>
+        <div class="field"><label>Контактное лицо <span class="req">*</span></label>
+          <input id="f-person" placeholder="Имя"></div>
+        <div class="field"><label>Телефон <span class="req">*</span></label>
+          <input id="f-phone" type="tel" placeholder="+7 ___ ___-__-__"></div>
+        <div class="field"><label>Почта</label><input id="f-email" type="email" placeholder="mail@company.ru"></div>
+        <div class="field"><label>Город</label><input id="f-city" placeholder="Москва"></div>
+        <div class="field" hidden><label>Дата</label><input id="f-date" type="date"></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h2><i>3</i>Доставка и оплата</h2>
+      <div class="form-grid">
+        <div class="field"><label>Способ доставки</label>
+          <select id="f-delivery">
+            <option>Самовывоз со склада</option>
+            <option>Доставка транспортом поставщика</option>
+            <option>Транспортная компания</option>
+          </select></div>
+        <div class="field"><label>ТК или адрес доставки</label>
+          <input id="f-address" placeholder="Название ТК или адрес"></div>
+        <div class="field"><label>Способ оплаты</label>
+          <select id="f-payment">
+            <option>Безналичный расчёт с НДС</option>
+            <option>Безналичный расчёт без НДС</option>
+            <option>Перевод на карту</option>
+            <option>Наличные при получении</option>
+          </select></div>
+        <div class="field"><label>Желаемая дата отгрузки</label><input id="f-ship" type="date"></div>
+        <div class="field" style="flex-basis:100%"><label>Комментарий</label>
+          <input id="f-note" placeholder="Например: нужен паллетный борт"></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary big" id="send">Отправить заявку</button>
+      <button class="btn" id="pdf">Скачать PDF</button>
+      <button class="btn" id="wa">В WhatsApp</button>
+      <button class="btn ghost" id="clear">Очистить</button>
     </div>
   </div>
 
-  <div class="block">
-    <h2><i>3</i>Доставка и оплата</h2>
-    <p class="lead">Условия подтверждает менеджер после проверки остатков.</p>
-    <div class="form-grid">
-      <div class="field"><label>Способ доставки</label>
-        <select id="f-delivery">
-          <option>Самовывоз со склада</option>
-          <option>Доставка транспортом поставщика</option>
-          <option>Транспортная компания</option>
-        </select></div>
-      <div class="field"><label>Транспортная компания / адрес доставки</label>
-        <input id="f-address" placeholder="Название ТК или адрес"></div>
-      <div class="field"><label>Способ оплаты</label>
-        <select id="f-payment">
-          <option>Безналичный расчёт с НДС</option>
-          <option>Безналичный расчёт без НДС</option>
-          <option>Перевод на карту</option>
-          <option>Наличные при получении</option>
-        </select></div>
-      <div class="field"><label>Комментарий к заказу</label>
-        <input id="f-note" placeholder="Например: нужен паллетный борт"></div>
-    </div>
-  </div>
-
-  <div class="section-title"><h2>Готовый бланк</h2></div>
-  <div id="summary"></div>
-
-  <div class="actions">
-    <button class="btn primary" id="print">Печать / сохранить PDF</button>
-    <button class="btn" id="wa">Отправить в WhatsApp</button>
-    <button class="btn" id="mail">Отправить почтой</button>
-    <button class="btn" id="copy">Скопировать текст заявки</button>
-    <button class="btn" id="clear">Очистить заказ</button>
-  </div>
-
+  <div class="section-title"><h2>Упаковочный лист</h2></div>
   <div id="sheet"></div>
 </main>
 
@@ -85,4 +89,5 @@
 <div id="toast"></div>
 <script src="config.js"></script>
 <script src="app.js"></script>
+<script src="order.js"></script>
 <script>renderOrder()</script>

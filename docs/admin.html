@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Панель продавца — Алмалы-Керамик</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230c0e10'/><path d='M50 20 66 50 50 80 34 50z' fill='%23c9a227'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<header><div class="wrap head">
+  <a class="logo" href="index.html">Алмалы<span>·</span>Керамик</a>
+  <span class="sub">Панель продавца</span>
+  <span class="right">
+    <a class="navlink" href="index.html">Каталог</a>
+    <button class="navlink" id="refresh" hidden>Обновить</button>
+    <button class="navlink" id="logout" hidden>Выйти</button>
+  </span>
+</div></header>
+
+<section class="gate" id="gate">
+  <h1>Заявки дилеров</h1>
+  <p class="lead" id="gate-note">Введите код доступа продавца.</p>
+  <input type="password" id="code" placeholder="Код доступа" autocomplete="off">
+  <button class="btn primary" id="login">Войти</button>
+</section>
+
+<main class="wrap" id="app" hidden>
+  <div class="kpis" id="kpis"></div>
+
+  <div class="tools">
+    <input type="search" id="q" placeholder="Поиск: заказчик, телефон, артикул, номер" aria-label="Поиск">
+    <div class="chips" id="st" role="group">
+      <button class="chip" aria-pressed="true" data-v="">Все</button>
+      <button class="chip" data-v="new">Новые</button>
+      <button class="chip" data-v="work">В работе</button>
+      <button class="chip" data-v="done">Отгружены</button>
+      <button class="chip" data-v="cancel">Отменены</button>
+    </div>
+    <button class="btn" id="csv">Выгрузить CSV</button>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="orders" id="orders"></div>
+</main>
+
+<div id="sheet"></div>
+<div id="toast"></div>
+<script src="config.js"></script>
+<script src="admin.js"></script>
