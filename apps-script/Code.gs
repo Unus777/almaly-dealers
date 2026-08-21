@@ -54,9 +54,9 @@ function doPost(e) {
       var t = totals_(o.items);
       var no = o.no || ('АК-' + Utilities.formatDate(new Date(), 'Europe/Moscow', 'yyMMdd') + '-' +
         Math.floor(Math.random() * 900 + 100));
-      sheet_().appendRow([no, new Date(), 'new', o.date || '', text_(o.customer), text_(o.inn),
+      sheet_().appendRow([no, new Date(), 'new', "'" + (o.date || ''), text_(o.customer), text_(o.inn),
         text_(o.person), text_(o.phone), text_(o.email), text_(o.city), text_(o.delivery),
-        text_(o.address), text_(o.payment), o.ship || '', text_(o.note),
+        text_(o.address), text_(o.payment), "'" + (o.ship || ''), text_(o.note),
         t.packs, t.sqm, JSON.stringify(o.items)]);
       if (NOTIFY_EMAIL) {
         MailApp.sendEmail(NOTIFY_EMAIL, 'Заявка № ' + no + ' — ' + o.customer,
@@ -75,11 +75,12 @@ function doPost(e) {
       var rows = sheet_().getDataRange().getValues().slice(1);
       var orders = rows.filter(function (r) { return r[0]; }).map(function (r) {
         return {no: r[0], received: r[1] instanceof Date ? r[1].toISOString() : String(r[1]),
-          status: r[2] || 'new', date: r[3] instanceof Date ? Utilities.formatDate(r[3], 'Europe/Moscow', 'yyyy-MM-dd') : String(r[3]),
+          status: r[2] || 'new',
+          date: r[3] instanceof Date ? Utilities.formatDate(r[3], 'Europe/Moscow', 'yyyy-MM-dd') : String(r[3]).replace(/^'/, ''),
           customer: r[4], inn: String(r[5]), person: r[6], phone: String(r[7]).replace(/^'/, ''),
           email: r[8], city: r[9],
           delivery: r[10], address: r[11], payment: r[12],
-          ship: r[13] instanceof Date ? Utilities.formatDate(r[13], 'Europe/Moscow', 'yyyy-MM-dd') : String(r[13]),
+          ship: r[13] instanceof Date ? Utilities.formatDate(r[13], 'Europe/Moscow', 'yyyy-MM-dd') : String(r[13]).replace(/^'/, ''),
           note: r[14], items: JSON.parse(r[17] || '[]')};
       }).reverse();
       return json_({ok: true, orders: orders});

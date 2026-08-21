@@ -1,9 +1,14 @@
 /* Оформление заявки: позиции в м², данные дилера, отправка и упаковочный лист. */
 const F = ['customer','inn','person','phone','email','city','delivery','address','payment','ship','note'];
 const formData = () => Object.fromEntries(F.map(k => [k, ($('#f-' + k)?.value || '').trim()]));
-const fmtDate = s => s ? new Date(s).toLocaleDateString('ru-RU') : '—';
+const fmtDate = s => s ? new Date(s + 'T00:00:00').toLocaleDateString('ru-RU') : '—';
+/** Местная дата в виде ГГГГ-ММ-ДД: toISOString даёт UTC и под утро «отматывает» сутки. */
+const today = () => {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+};
 
-const newNo = () => 'АК-' + new Date().toISOString().slice(2, 10).replace(/-/g, '') + '-' +
+const newNo = () => 'АК-' + today().slice(2).replace(/-/g, '') + '-' +
   Math.random().toString(36).slice(2, 5).toUpperCase();
 function orderNo() {
   let n = localStorage.getItem('almaly_order_no');
@@ -89,7 +94,7 @@ function sheetHtml(o) {
 }
 
 const currentOrder = () => ({no: orderNo(), ...formData(), items: getCart(),
-  date: $('#f-date')?.value || new Date().toISOString().slice(0, 10)});
+  date: $('#f-date')?.value || today()});
 
 const renderSheet = () => $('#sheet').innerHTML = getCart().length ? sheetHtml(currentOrder()) : '';
 
@@ -175,7 +180,7 @@ function done(o, message, link) {
 /* ---------- страница ---------- */
 function renderOrder() {
   updateCount();
-  $('#f-date').value = new Date().toISOString().slice(0, 10);
+  $('#f-date').value = today();
   F.forEach(k => {
     const el = $('#f-' + k); if (!el) return;
     const saved = localStorage.getItem('almaly_f_' + k);

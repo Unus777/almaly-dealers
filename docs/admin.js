@@ -2,7 +2,11 @@
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nf = (v, d = 2) => Number(v).toLocaleString('ru-RU', {maximumFractionDigits: d});
-const fmtDate = s => s ? new Date(s).toLocaleDateString('ru-RU') : '—';
+const fmtDate = s => {
+  if (!s) return '—';
+  const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? `${m[3]}.${m[2]}.${m[1]}` : new Date(s).toLocaleDateString('ru-RU');
+};
 const fmtWhen = s => s ? new Date(s).toLocaleString('ru-RU', {day: '2-digit', month: '2-digit',
   hour: '2-digit', minute: '2-digit'}) : '—';
 const STATUS = {new: 'Новая', work: 'В работе', done: 'Отгружена', cancel: 'Отменена'};
