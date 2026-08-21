@@ -11,7 +11,11 @@ const totals = items => (items || []).reduce((a, i) => ({packs: a.packs + i.pack
 
 const JOURNAL = 'almaly_admin_orders';
 const LOCAL = !ORDERS_API;                 // без сервера — журнал живёт в браузере продавца
+const SESSION = 'almaly_admin_session';
 let code = localStorage.getItem('almaly_admin_code') || '';
+let user = null;
+try { user = JSON.parse(localStorage.getItem(SESSION) || sessionStorage.getItem(SESSION) || 'null'); }
+catch { user = null; }
 let orders = [];
 
 const readLocal = () => { try { return JSON.parse(localStorage.getItem(JOURNAL)) || []; } catch { return []; } };
@@ -174,21 +178,28 @@ async function refresh(quiet) {
   }
 }
 
+function showPanel() {
+  $('#gate').hidden = true; $('#app').hidden = false;
+  ['who', 'refresh', 'logout'].forEach(id => $('#' + id).hidden = false);
+  $('#who').textContent = user ? user.name : '';
+  $('#clearjournal').hidden = !LOCAL;
+  $('#paste-box').hidden = !LOCAL;
+  $('#mode-note').innerHTML = LOCAL
+    ? 'Заявки попадают в журнал, когда вы открываете ссылку из WhatsApp или вставляете её сюда. ' +
+      'Журнал хранится в этом браузере.'
+    : 'Заявки приходят автоматически с сервера.';
+}
+
 async function enter() {
-  if (LOCAL) {                       // журнал в браузере: вход без кода
-    $('#gate').hidden = true; $('#app').hidden = false;
-    $('#refresh').hidden = $('#logout').hidden = false;
-    $('#logout').textContent = 'Очистить журнал';
-    $('#mode-note').innerHTML = 'Заявки попадают сюда, когда вы открываете ссылку из WhatsApp — ' +
-      'она добавляется в журнал автоматически. Журнал хранится в этом браузере.';
+  if (LOCAL) {                       // журнал в браузере
+    showPanel();
     await refresh(true);
     return;
   }
   try {
     await refresh(true);
     localStorage.setItem('almaly_admin_code', code);
-    $('#gate').hidden = true; $('#app').hidden = false;
-    $('#refresh').hidden = $('#logout').hidden = false;
+    showPanel();
     setInterval(() => refresh(true).catch(() => {}), 60000);   // тихое обновление раз в минуту
   } catch (e) {
     $('#gate').hidden = false; $('#app').hidden = true;
@@ -196,18 +207,37 @@ async function enter() {
   }
 }
 
-$('#login').addEventListener('click', () => {
-  code = $('#code').value.trim();
-  if (!code) return toast('Введите код доступа');
+$('#login-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const login = $('#user').value.trim().toLowerCase(), pass = $('#pass').value;
+  const found = ADMIN_USERS.find(u => u.login.toLowerCase() === login && u.password === pass);
+  if (!found) { $('#pass').value = ''; $('#pass').classList.add('err'); return toast('Неверный логин или пароль'); }
+  user = {login: found.login, name: found.name};
+  code = found.password;                      // для серверного режима код = пароль сотрудника
+  ($('#remember').checked ? localStorage : sessionStorage).setItem(SESSION, JSON.stringify(user));
   enter();
 });
-$('#code').addEventListener('keydown', e => e.key === 'Enter' && $('#login').click());
+$('#pass').addEventListener('input', e => e.target.classList.remove('err'));
 $('#logout').addEventListener('click', () => {
-  if (LOCAL) {
-    if (!confirm('Удалить все заявки из журнала этого браузера?')) return;
-    localStorage.removeItem(JOURNAL);
-  } else localStorage.removeItem('almaly_admin_code');
+  localStorage.removeItem(SESSION); sessionStorage.removeItem(SESSION);
+  localStorage.removeItem('almaly_admin_code');
   location.reload();
+});
+$('#clearjournal').addEventListener('click', () => {
+  if (!confirm('Удалить все заявки из журнала этого браузера?')) return;
+  localStorage.removeItem(JOURNAL); orders = []; draw(); toast('Журнал очищен');
+});
+
+/* Заявку можно не открывать по ссылке, а вставить её сюда. */
+$('#paste-btn').addEventListener('click', () => {
+  const v = $('#paste').value.trim();
+  const m = v.match(/#o=([A-Za-z0-9+/=]+)/);
+  if (!m) return toast('Вставьте ссылку целиком — она содержит #o=…');
+  location.hash = '#o=' + m[1];
+  const no = takeFromLink();
+  $('#paste').value = '';
+  orders = readLocal(); draw();
+  if (no) scrollTo({top: 0, behavior: 'smooth'});
 });
 $('#refresh').addEventListener('click', () => refresh());
 $('#q').addEventListener('input', draw);
@@ -239,6 +269,6 @@ $('#orders').addEventListener('change', async e => {
   } catch (err) { toast('Не удалось изменить статус: ' + err.message); }
 });
 
-const incomingNo = takeFromLink();
-if (LOCAL || code) enter();
-if (incomingNo) addEventListener('load', () => draw());
+const incomingNo = LOCAL ? takeFromLink() : null;   // ссылка сохраняется в журнал сразу
+if (user) enter();
+else if (incomingNo) toast(`Заявка № ${incomingNo} сохранена — войдите, чтобы открыть её`);

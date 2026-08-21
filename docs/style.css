@@ -281,3 +281,24 @@ footer{border-top:1px solid var(--line);color:var(--dim);font-size:13px;padding:
     letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
   .items td[data-l=""]::before{display:none}
 }
+
+/* ---------- вход в панель продавца ---------- */
+.gate{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 150px);padding:40px 20px}
+.gate-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:38px 34px;max-width:420px;width:100%;text-align:center;position:relative;overflow:hidden}
+.gate-card::before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:var(--gold-line)}
+.gate-mark{width:56px;height:56px;margin:0 auto 16px;display:block}
+.gate-card h1{font-size:30px;margin:0 0 8px}
+.gate-card .lead{margin:0 0 22px}
+.gate-card form{display:flex;flex-direction:column;gap:12px;text-align:left}
+.gate-card input{text-align:left}
+.gate-card input[type=text],.gate-card input:not([type]),.gate-card input[type=password]{width:100%}
+.remember{display:flex;align-items:center;gap:9px;color:var(--dim);font-size:13px;cursor:pointer;
+  text-align:left;margin:2px 0 4px}
+.remember input{accent-color:var(--accent)}
+.gate-back{margin:20px 0 0;font-size:13px}
+.gate-back a{color:var(--dim)}
+.gate-back a:hover{color:var(--accent)}
+.navlink.who{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);cursor:default}
+.paste-box{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 6px}
+.paste-box input{flex:1;min-width:240px}

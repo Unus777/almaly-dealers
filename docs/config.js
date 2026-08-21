@@ -12,5 +12,13 @@ const COMPANY = {
 const CATALOG = 'https://unus777.github.io/almaly-tiles/';
 
 /* Приём заявок: адрес веб-приложения Google Apps Script (см. apps-script/README.md).
-   Пока пусто — сайт работает без сервера: PDF, WhatsApp и почта. */
+   Пока пусто — заявки приходят ссылкой из WhatsApp и хранятся в браузере продавца. */
 const ORDERS_API = '';
+
+/* Доступ в панель продавца. Логины и пароли меняйте здесь.
+   Это простая защита от посторонних глаз: страница статическая, и значения видно в исходном коде,
+   поэтому не используйте пароли от почты, банка или Ozon. */
+const ADMIN_USERS = [
+  {login: 'almaly',  password: 'almaly2026', name: 'Администратор'},
+  {login: 'manager', password: 'zakaz2026',  name: 'Менеджер'},
+];
