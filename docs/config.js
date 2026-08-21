@@ -19,6 +19,5 @@ const ORDERS_API = '';
    Это простая защита от посторонних глаз: страница статическая, и значения видно в исходном коде,
    поэтому не используйте пароли от почты, банка или Ozon. */
 const ADMIN_USERS = [
-  {login: 'almaly',  password: 'almaly2026', name: 'Администратор'},
-  {login: 'manager', password: 'zakaz2026',  name: 'Менеджер'},
+  {login: 'admin', password: 'admin', name: 'Администратор'},
 ];
