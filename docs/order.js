@@ -128,11 +128,8 @@ async function submitOrder() {
   if (!validate()) return;
   const o = currentOrder();
   const btn = $('#send');
-  if (!ORDERS_API) {          // без сервера: заявка уходит менеджеру ссылкой в WhatsApp
-    const link = adminLink(o);
-    open(`https://wa.me/${COMPANY.whatsapp}?text=` +
-      encodeURIComponent(orderText(o) + '\n\nЗаявка для панели продавца:\n' + link), '_blank');
-    return done(o, 'Заявка отправлена менеджеру в WhatsApp.', link);
+  if (!ORDERS_API) {          // приём заявок ещё не подключён — отдаём заявку ссылкой
+    return done(o, 'Заявка сформирована. Отправьте её менеджеру кнопкой ниже.', adminLink(o));
   }
   btn.disabled = true; btn.textContent = 'Отправляю…';
   try {
@@ -158,14 +155,16 @@ function done(o, message, link) {
       <h2>Заявка № ${esc(o.no)} отправлена</h2>
       <p>${esc(message)} Сохраните упаковочный лист — он пригодится при отгрузке.</p>
       <div class="actions" style="justify-content:center">
-        <button class="btn primary" onclick="print()">Скачать PDF · упаковочный лист</button>
-        ${link ? '<button class="btn" id="copy-link">Скопировать ссылку для менеджера</button>' : ''}
+        ${link ? '<button class="btn primary" id="send-wa">Отправить менеджеру в WhatsApp</button>' : ''}
+        <button class="btn" onclick="print()">Скачать PDF · упаковочный лист</button>
+        ${link ? '<button class="btn" id="copy-link">Скопировать ссылку</button>' : ''}
         <a class="btn" href="index.html">Новая заявка</a>
       </div>
-      ${link ? '<p class="lead" style="margin:6px auto 0;text-align:center">Если WhatsApp не открылся, ' +
-        'скопируйте ссылку и отправьте её менеджеру любым способом.</p>' : ''}
     </div>`;
   $('#sheet').innerHTML = sheetHtml(o);
+  $('#send-wa')?.addEventListener('click', () =>
+    open(`https://wa.me/${COMPANY.whatsapp}?text=` +
+      encodeURIComponent(orderText(o) + '\n\nЗаявка для панели продавца:\n' + link), '_blank'));
   $('#copy-link')?.addEventListener('click', async () => {
     await navigator.clipboard.writeText(link);
     toast('Ссылка скопирована — отправьте её менеджеру');
@@ -204,12 +203,12 @@ function renderOrder() {
 
   $('#send').addEventListener('click', submitOrder);
   $('#pdf').addEventListener('click', () => validate() && print());
-  $('#wa').addEventListener('click', () => validate() &&
+  $('#wa')?.addEventListener('click', () => validate() &&
     open(`https://wa.me/${COMPANY.whatsapp}?text=` + encodeURIComponent(orderText(currentOrder())), '_blank'));
   $('#clear').addEventListener('click', () => {
     if (!confirm('Очистить заявку?')) return;
     localStorage.removeItem(CART); localStorage.removeItem('almaly_order_no');
     renderItems(); updateCount(); toast('Заявка очищена');
   });
-  if (!ORDERS_API) $('#send').textContent = 'Отправить заявку в WhatsApp';
+  $('#send').textContent = 'Отправить заявку';
 }
