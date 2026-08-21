@@ -209,6 +209,8 @@ async function enter() {
 
 $('#login-form').addEventListener('submit', e => {
   e.preventDefault();
+  if (typeof ADMIN_USERS === 'undefined')
+    return toast('Страница загрузилась не полностью — обновите её (⌘⇧R)');
   const login = $('#user').value.trim().toLowerCase(), pass = $('#pass').value;
   const found = ADMIN_USERS.find(u => u.login.toLowerCase() === login && u.password === pass);
   if (!found) { $('#pass').value = ''; $('#pass').classList.add('err'); return toast('Неверный логин или пароль'); }
