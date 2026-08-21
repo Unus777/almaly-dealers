@@ -24,6 +24,12 @@ function sheet_() {
   return sh;
 }
 
+/** Значения вроде «+7 900…» таблица принимает за формулу — помечаем их как текст. */
+function text_(v) {
+  var s = v == null ? '' : String(v);
+  return /^[=+\-@]/.test(s) ? "'" + s : s;
+}
+
 function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
@@ -48,9 +54,10 @@ function doPost(e) {
       var t = totals_(o.items);
       var no = o.no || ('АК-' + Utilities.formatDate(new Date(), 'Europe/Moscow', 'yyMMdd') + '-' +
         Math.floor(Math.random() * 900 + 100));
-      sheet_().appendRow([no, new Date(), 'new', o.date || '', o.customer, o.inn || '', o.person || '',
-        o.phone, o.email || '', o.city || '', o.delivery || '', o.address || '', o.payment || '',
-        o.ship || '', o.note || '', t.packs, t.sqm, JSON.stringify(o.items)]);
+      sheet_().appendRow([no, new Date(), 'new', o.date || '', text_(o.customer), text_(o.inn),
+        text_(o.person), text_(o.phone), text_(o.email), text_(o.city), text_(o.delivery),
+        text_(o.address), text_(o.payment), o.ship || '', text_(o.note),
+        t.packs, t.sqm, JSON.stringify(o.items)]);
       if (NOTIFY_EMAIL) {
         MailApp.sendEmail(NOTIFY_EMAIL, 'Заявка № ' + no + ' — ' + o.customer,
           o.customer + ', ' + (o.person || '') + ', ' + o.phone + '\n' +
@@ -69,12 +76,24 @@ function doPost(e) {
       var orders = rows.filter(function (r) { return r[0]; }).map(function (r) {
         return {no: r[0], received: r[1] instanceof Date ? r[1].toISOString() : String(r[1]),
           status: r[2] || 'new', date: r[3] instanceof Date ? Utilities.formatDate(r[3], 'Europe/Moscow', 'yyyy-MM-dd') : String(r[3]),
-          customer: r[4], inn: r[5], person: r[6], phone: r[7], email: r[8], city: r[9],
+          customer: r[4], inn: String(r[5]), person: r[6], phone: String(r[7]).replace(/^'/, ''),
+          email: r[8], city: r[9],
           delivery: r[10], address: r[11], payment: r[12],
           ship: r[13] instanceof Date ? Utilities.formatDate(r[13], 'Europe/Moscow', 'yyyy-MM-dd') : String(r[13]),
           note: r[14], items: JSON.parse(r[17] || '[]')};
       }).reverse();
       return json_({ok: true, orders: orders});
+    }
+
+    if (body.action === 'delete') {
+      var shd = sheet_(), vals = shd.getDataRange().getValues();
+      for (var d = 1; d < vals.length; d++) {
+        if (String(vals[d][0]) === String(body.no)) {
+          shd.deleteRow(d + 1);
+          return json_({ok: true});
+        }
+      }
+      return json_({ok: false, error: 'заявка не найдена'});
     }
 
     if (body.action === 'status') {
