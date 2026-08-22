@@ -8,8 +8,8 @@ const COMPANY = {
   site: 'https://unus777.github.io/almaly-dealers/',
 };
 
-/* Каталог берём из витрины с QR-кодами — один источник фото и остатков. */
-const CATALOG = 'https://unus777.github.io/almaly-tiles/';
+/* Репозиторий портала — в него редактор каталога сохраняет фотографии. */
+const REPO = 'Unus777/almaly-dealers';
 
 /* Приём заявок: веб-приложение Google Apps Script, заявки падают в Google-таблицу.
    Если адрес очистить, сайт вернётся в режим «заявка ссылкой в WhatsApp». */

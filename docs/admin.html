@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2608221220">
+<link rel="stylesheet" href="style.css?v=2608221239">
 
 <header><div class="wrap head">
   <a class="logo" href="index.html">Алмалы<span>·</span>Керамик</a>
@@ -39,6 +39,12 @@
 </section>
 
 <main class="wrap" id="app" hidden>
+  <div class="tabs" role="tablist">
+    <button class="tab" data-tab="orders" aria-selected="true">Заявки</button>
+    <button class="tab" data-tab="editor" aria-selected="false">Редактор каталога</button>
+  </div>
+
+  <section id="tab-orders">
   <div class="kpis" id="kpis"></div>
   <p class="lead" id="mode-note"></p>
   <div class="paste-box" id="paste-box" hidden>
@@ -60,9 +66,36 @@
   </div>
 
   <div class="orders" id="orders"></div>
+  </section>
+
+  <section id="tab-editor" hidden>
+    <div class="gate" id="ed-gate" style="min-height:auto;padding:30px 0">
+      <div class="gate-card">
+        <h1 style="font-size:24px">Редактор каталога</h1>
+        <p class="lead">Фотографии портала лежат в его собственном репозитории. Чтобы их менять,
+          нужен GitHub-токен с правом записи в <b>almaly-dealers</b>. Он сохранится в этом браузере.</p>
+        <form onsubmit="return false" autocomplete="off">
+          <input type="password" id="ed-token" placeholder="ghp_… или github_pat_…" autocomplete="off">
+          <button class="btn primary wide" id="ed-login" type="submit">Открыть редактор</button>
+        </form>
+        <p class="gate-back"><a href="https://github.com/settings/tokens/new?scopes=repo&description=Almaly%20dealers%20editor"
+           target="_blank">Создать токен →</a></p>
+      </div>
+    </div>
+
+    <div class="layout" id="ed-app" hidden>
+      <aside class="side-list">
+        <input type="search" id="ed-q" placeholder="Поиск модели или артикула" aria-label="Поиск">
+        <div class="side-scroll" id="ed-list"></div>
+      </aside>
+      <div class="work" id="ed-work"></div>
+    </div>
+  </section>
 </main>
 
 <div id="sheet"></div>
 <div id="toast"></div>
-<script src="config.js?v=2608221220"></script>
-<script src="admin.js?v=2608221220"></script>
+<script src="config.js?v=2608221239"></script>
+<script src="dnd.js?v=2608221239"></script>
+<script src="admin.js?v=2608221239"></script>
+<script src="editor.js?v=2608221239"></script>

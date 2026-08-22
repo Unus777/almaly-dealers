@@ -182,12 +182,23 @@ async function refresh(quiet) {
   }
 }
 
+/* Вкладки панели: заявки и редактор каталога. */
+function initTabs() {
+  document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x === b));
+    $('#tab-orders').hidden = b.dataset.tab !== 'orders';
+    $('#tab-editor').hidden = b.dataset.tab !== 'editor';
+  }));
+}
+
 function showPanel() {
   $('#gate').hidden = true; $('#app').hidden = false;
   ['who', 'refresh', 'logout'].forEach(id => $('#' + id).hidden = false);
   $('#who').textContent = user ? user.name : '';
   $('#clearjournal').hidden = !LOCAL;
   $('#paste-box').hidden = !LOCAL;
+  initTabs();
+  if (typeof initEditor === 'function') initEditor();
   $('#mode-note').innerHTML = LOCAL
     ? 'Заявки попадают в журнал, когда вы открываете ссылку из WhatsApp или вставляете её сюда. ' +
       'Журнал хранится в этом браузере.'

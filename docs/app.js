@@ -1,10 +1,10 @@
-/* Каталог берём из витрины с QR-кодами: один источник данных, тот сайт не меняется. */
-const load = fetch(CATALOG + 'data.json', {cache: 'no-cache'}).then(r => r.json());
+/* Каталог портала — собственный: свои карточки, свои фотографии. */
+const load = fetch('data.json', {cache: 'no-cache'}).then(r => r.json());
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nf = (v, d = 2) => Number(v).toLocaleString('ru-RU', {maximumFractionDigits: d});
 const m2 = v => v > 0 ? nf(v) + ' м²' : '—';
-const img = (t, i, thumb) => `${CATALOG}img/${t.art}/${t.photos[i]}${thumb ? '_t' : ''}.jpg`;
+const img = (t, i, thumb) => `img/${t.art}/${t.photos[i]}${thumb ? '_t' : ''}.jpg`;
 
 /** Из строки упаковки «1 уп-2шт-1,44м2-27 кг» достаём м² и вес одной упаковки. */
 function packInfo(t) {
