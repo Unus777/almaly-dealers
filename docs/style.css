@@ -302,3 +302,16 @@ footer{border-top:1px solid var(--line);color:var(--dim);font-size:13px;padding:
 .navlink.who{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);cursor:default}
 .paste-box{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 6px}
 .paste-box input{flex:1;min-width:240px}
+
+/* ---------- цифры ровным шрифтом ----------
+   В Cormorant цифры старостильные (разной высоты) — номера заявок и счётчики выглядели «прыгающими». */
+.kpi b, .summary b, .hero-stats b, .step b, .o-hd b, .sheet .no b, .items b, .o-items b, .calc-row b {
+  font-family: var(--sans);
+  font-weight: 600;
+  letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.kpi b, .summary b, .hero-stats b { font-size: 26px }
+.step b { font-size: 26px; color: var(--accent) }
+.o-hd b { font-size: 17px }
+.sheet .no b { font-size: 17px }
