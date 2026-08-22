@@ -138,8 +138,10 @@ async function submitOrder() {
   }
   btn.disabled = true; btn.textContent = 'Отправляю…';
   try {
+    // даты отправляем с апострофом: иначе таблица считает их своими датами и сдвигает
+    const payload = {...o, date: "'" + o.date, ship: o.ship ? "'" + o.ship : ''};
     const r = await fetch(ORDERS_API, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body: JSON.stringify({action: 'create', order: o})});
+      body: JSON.stringify({action: 'create', order: payload})});
     const d = await r.json();
     if (!d.ok) throw new Error(d.error || 'сервер отклонил заявку');
     done({...o, no: d.no || o.no}, 'Заявка принята. Менеджер свяжется с вами.');
