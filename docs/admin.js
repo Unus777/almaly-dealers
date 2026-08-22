@@ -270,23 +270,34 @@ $('#orders').addEventListener('click', async e => {
   if (b.dataset.act === 'print') return printOrder(orders.find(o => o.no === no));
   if (b.dataset.act === 'del') {
     if (!confirm(`Убрать заявку № ${no}?`)) return;
+    b.disabled = true;
     try {
-      if (!LOCAL) await api({action: 'delete', no});
-      orders = orders.filter(o => o.no !== no);
-      if (LOCAL) writeLocal(orders);
-      draw();
+      if (LOCAL) {
+        orders = orders.filter(o => o.no !== no);
+        writeLocal(orders); draw();
+      } else {
+        await api({action: 'delete', no});
+        await refresh(true);          // перечитываем список: показываем то, что реально осталось
+      }
+      toast(`Заявка № ${no} удалена`);
     } catch (err) { toast('Не удалось удалить: ' + err.message); }
+    finally { b.disabled = false; }
   }
 });
 $('#orders').addEventListener('change', async e => {
   const sel = e.target.closest('[data-act=status]'); if (!sel) return;
   const no = sel.closest('.order').dataset.no;
+  const value = sel.value;
   try {
-    if (!LOCAL) await api({action: 'status', no, status: sel.value});
-    orders.find(o => o.no === no).status = sel.value;
-    if (LOCAL) writeLocal(orders);
-    draw(); toast(`Заявка № ${no}: ${STATUS[sel.value]}`);
-  } catch (err) { toast('Не удалось изменить статус: ' + err.message); }
+    if (LOCAL) {
+      orders.find(o => o.no === no).status = value;
+      writeLocal(orders); draw();
+    } else {
+      await api({action: 'status', no, status: value});
+      await refresh(true);
+    }
+    toast(`Заявка № ${no}: ${STATUS[value]}`);
+  } catch (err) { toast('Не удалось изменить статус: ' + err.message); await refresh(true).catch(() => {}); }
 });
 
 const incomingNo = LOCAL ? takeFromLink() : null;   // ссылка сохраняется в журнал сразу
