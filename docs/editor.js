@@ -227,7 +227,11 @@ async function edStart() {
   }
 }
 
+let edInited = false;
+
 function initEditor() {
+  if (edInited) return;
+  edInited = true;
   $('#ed-login').addEventListener('click', () => {
     ED.token = $('#ed-token').value.trim();
     if (!ED.token) return toast('Вставьте токен');
