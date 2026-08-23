@@ -8,6 +8,10 @@ const COMPANY = {
   site: 'https://unus777.github.io/almaly-dealers/',
 };
 
+/* Пока телефон и почта не заменены на рабочие, кнопки связи и строка контактов скрываются:
+   в бланке и на экране отправки не должно быть «+7 (000) 000-00-00». */
+const HAS_CONTACTS = () => !/0{3}/.test(COMPANY.phone) && !COMPANY.email.startsWith('zakaz@almaly-keramik');
+
 /* Репозиторий портала — в него редактор каталога сохраняет фотографии. */
 const REPO = 'Unus777/almaly-dealers';
 

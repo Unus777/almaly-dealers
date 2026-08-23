@@ -59,7 +59,8 @@ function sheetHtml(o) {
         <svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="14" fill="#111"/>
           <path d="M50 20 66 50 50 80 34 50z" fill="#c9a227"/></svg>
         <div><h1>Заявка на отгрузку</h1>
-          <div class="company">${COMPANY.name} · ${COMPANY.tagline}<br>${COMPANY.phone} · ${COMPANY.email}</div>
+          <div class="company">${COMPANY.name} · ${COMPANY.tagline}
+            ${HAS_CONTACTS() ? `<br>${COMPANY.phone} · ${COMPANY.email}` : ''}</div>
         </div>
       </div>
       <div class="no">заявка<b>№ ${esc(o.no)}</b>от ${fmtDate(o.date)}</div>
@@ -162,7 +163,7 @@ function done(o, message, link) {
       <h2>Заявка № ${esc(o.no)} отправлена</h2>
       <p>${esc(message)} Сохраните упаковочный лист — он пригодится при отгрузке.</p>
       <div class="actions" style="justify-content:center">
-        ${link ? '<button class="btn primary" id="send-wa">Отправить менеджеру в WhatsApp</button>' : ''}
+        ${link && HAS_CONTACTS() ? '<button class="btn primary" id="send-wa">Отправить менеджеру в WhatsApp</button>' : ''}
         <button class="btn" onclick="print()">Скачать PDF · упаковочный лист</button>
         ${link ? '<button class="btn" id="copy-link">Скопировать ссылку</button>' : ''}
         <a class="btn" href="index.html">Новая заявка</a>

@@ -126,7 +126,8 @@ function printOrder(o) {
       <div class="mark"><svg viewBox="0 0 100 100"><rect width="100" height="100" rx="14" fill="#111"/>
         <path d="M50 20 66 50 50 80 34 50z" fill="#c9a227"/></svg>
         <div><h1>Заявка на отгрузку</h1>
-          <div class="company">${COMPANY.name} · ${COMPANY.tagline}<br>${COMPANY.phone} · ${COMPANY.email}</div></div>
+          <div class="company">${COMPANY.name} · ${COMPANY.tagline}
+            ${HAS_CONTACTS() ? `<br>${COMPANY.phone} · ${COMPANY.email}` : ''}</div></div>
       </div>
       <div class="no">заявка<b>№ ${esc(o.no)}</b>от ${fmtWhen(o.received).split(',')[0]}</div>
     </div>
