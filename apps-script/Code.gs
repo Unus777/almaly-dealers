@@ -69,6 +69,18 @@ function doPost(e) {
       return json_({ok: true, no: no});
     }
 
+    // Дилер спрашивает статус своих заявок по их номерам: отдаём только статус, без данных заказчика.
+    if (body.action === 'track') {
+      var wanted = (body.nos || []).slice(0, 30).map(String);
+      if (!wanted.length) return json_({ok: true, statuses: {}});
+      var all = sheet_().getDataRange().getValues().slice(1);
+      var statuses = {};
+      all.forEach(function (r) {
+        if (r[0] && wanted.indexOf(String(r[0])) !== -1) statuses[String(r[0])] = r[2] || 'new';
+      });
+      return json_({ok: true, statuses: statuses});
+    }
+
     if (body.code !== ADMIN_CODE) return json_({ok: false, error: 'неверный код доступа'});
 
     if (body.action === 'list') {

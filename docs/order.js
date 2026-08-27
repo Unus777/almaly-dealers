@@ -210,7 +210,7 @@ async function submitOrder() {
 function done(o, message, link) {
   localStorage.setItem('almaly_last_order', JSON.stringify(o));
   const mine = JSON.parse(localStorage.getItem('almaly_my_orders') || '[]');
-  mine.unshift({no: o.no, date: o.date, sent: new Date().toISOString(), ...totals(o.items)});
+  mine.unshift({no: o.no, date: o.date, sent: new Date().toISOString(), status: 'new', ...totals(o.items)});
   localStorage.setItem('almaly_my_orders', JSON.stringify(mine.slice(0, 20)));
   localStorage.removeItem(CART); localStorage.removeItem('almaly_order_no');
   updateCount();
@@ -230,6 +230,7 @@ function done(o, message, link) {
   $('#sheet').innerHTML = sheetHtml(o);
   $('#sheet-title').hidden = false;
   renderMyOrders();
+  trackMyOrders();
   $('#send-wa')?.addEventListener('click', () =>
     open(`https://wa.me/${COMPANY.whatsapp}?text=` +
       encodeURIComponent(orderText(o) + '\n\nЗаявка для панели продавца:\n' + link), '_blank'));
@@ -240,23 +241,58 @@ function done(o, message, link) {
   scrollTo({top: 0, behavior: 'smooth'});
 }
 
-/* ---------- страница ---------- */
+/* ---------- мои заявки и их статусы ---------- */
+const MINE = 'almaly_my_orders';
+const STATUS = {new: 'Новая', work: 'В работе', done: 'Отгружена', cancel: 'Отменена'};
+const myOrders = () => { try { return JSON.parse(localStorage.getItem(MINE) || '[]'); } catch { return []; } };
+
 /** История заявок этого дилера — чтобы не звонить менеджеру «а что с моим заказом». */
 function renderMyOrders() {
   const box = $('#my-orders'); if (!box) return;
-  const mine = JSON.parse(localStorage.getItem('almaly_my_orders') || '[]');
+  const mine = myOrders();
   box.innerHTML = !mine.length ? '' : `
     <div class="section-title"><h2>Мои заявки</h2></div>
+    <p class="lead" style="margin-top:12px">Статус ставит менеджер в панели продавца.
+      ${ORDERS_API ? '<button class="link-btn" type="button" id="refresh-mine">Обновить статусы</button>' : ''}</p>
     <div class="my-orders">${mine.map(o => `
       <div class="my-order">
         <b>№ ${esc(o.no)}</b>
         <span class="when">от ${fmtDate((o.sent || '').slice(0, 10))}</span>
         <span class="sum">${o.packs} уп. · ${nf(o.sqm)} м²</span>
+        ${o.status && STATUS[o.status]
+          ? `<span class="status s-${o.status}">${STATUS[o.status]}</span>`
+          : '<span class="status" title="Сервис ещё не сообщил статус">Статус уточняется</span>'}
       </div>`).join('')}</div>`;
+  $('#refresh-mine')?.addEventListener('click', () => trackMyOrders(true));
 }
 
+/** Спрашиваем у сервиса статусы только своих номеров — личные данные при этом не передаются. */
+async function trackMyOrders(loud) {
+  const mine = myOrders();
+  if (!ORDERS_API || !mine.length) return;
+  if (loud) toast('Обновляю статусы…');
+  try {
+    const r = await fetch(ORDERS_API, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({action: 'track', nos: mine.map(o => o.no)})});
+    const d = await r.json();
+    if (!d.ok || !d.statuses) throw new Error(d.error || 'сервис не ответил');
+    let changed = false;
+    mine.forEach(o => {
+      const status = d.statuses[o.no];
+      if (status && status !== o.status) { o.status = status; changed = true; }
+    });
+    if (changed) localStorage.setItem(MINE, JSON.stringify(mine));
+    renderMyOrders();
+    if (loud) toast('Статусы обновлены', 'ok');
+  } catch (e) {
+    if (loud) toast('Статусы недоступны: ' + e.message + '. Уточните у менеджера.', 'err');
+  }
+}
+
+/* ---------- страница ---------- */
+
 function renderOrder() {
-  updateCount(); renderFootContacts(); renderMyOrders();
+  updateCount(); renderFootContacts(); renderMyOrders(); trackMyOrders();
   $('#f-date').value = today();
   F.forEach(k => {
     const el = $('#f-' + k); if (!el) return;

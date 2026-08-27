@@ -546,6 +546,9 @@ input[type=number]{font-variant-numeric:tabular-nums}
 .my-order b{font-variant-numeric:tabular-nums}
 .my-order .when{color:var(--muted);font-size:var(--t-s)}
 .my-order .sum{margin-left:auto;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.my-order .status{margin-left:12px}
+@media(max-width:520px){.my-order{gap:8px}.my-order .sum{margin-left:0;width:100%}
+  .my-order .status{margin-left:0}}
 
 /* нижняя панель заявки */
 .cart-bar{position:fixed;left:0;right:0;bottom:0;z-index:var(--z-bar);background:var(--brand);color:var(--on-brand);
