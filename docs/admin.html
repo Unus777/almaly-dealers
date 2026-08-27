@@ -3,89 +3,147 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Панель продавца — Алмалы-Керамик</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230c0e10'/><path d='M50 20 66 50 50 80 34 50z' fill='%23c9a227'/></svg>">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#17191b">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 104'><rect width='104' height='104' rx='16' fill='%23ffffff'/><polygon points='52,4 73,25 25,73 4,52' fill='%23d8202a'/><polygon points='79,31 100,52 52,100 31,79' fill='%2317191b'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2608231555">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,800&display=swap" rel="stylesheet">
+<script>try{var t=localStorage.getItem('almaly_theme');if(t)document.documentElement.dataset.theme=t;else if(matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.dataset.theme='dark'}catch(e){}</script>
+<link rel="stylesheet" href="style.css?v=2608272252">
 
-<header><div class="wrap head">
-  <a class="logo" href="index.html">Алмалы<span>·</span>Керамик</a>
+<header id="top-bar"><div class="wrap head">
+  <a class="logo" href="index.html" aria-label="Almali Ceramic — Алмалы-Керамик, на главную">
+    <svg class="mark" viewBox="0 0 104 104" aria-hidden="true"><polygon points="52,4 73,25 25,73 4,52" fill="#d8202a"/><polygon points="79,31 100,52 52,100 31,79" fill="#17191b"/></svg>
+    <span class="word"><b>ALMALI</b><i>CERAMIC</i></span></a>
   <span class="sub">Панель продавца</span>
-  <span class="right">
+  <nav class="right" aria-label="Основная навигация">
+    <button class="navlink theme-btn" type="button" aria-pressed="false" aria-label="Включить тёмную тему">
+      <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/>
+        <path d="M12 2v2.4M12 19.6V22M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2 12h2.4M19.6 12H22M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.2 8.2 0 0 1 9.5 4 8.3 8.3 0 1 0 20 14.5z"/></svg>
+    </button>
     <a class="navlink" href="index.html">Каталог</a>
-    <span class="navlink who" id="who" hidden></span>
-    <button class="navlink" id="refresh" hidden>Обновить</button>
-    <button class="navlink" id="clearjournal" hidden>Очистить журнал</button>
-    <button class="navlink" id="logout" hidden>Выйти</button>
-  </span>
+  </nav>
 </div></header>
 
+<!-- ---------- вход ---------- -->
 <section class="gate" id="gate">
   <div class="gate-card">
-    <svg class="gate-mark" viewBox="0 0 100 100" aria-hidden="true">
-      <rect width="100" height="100" rx="20" fill="#14171a" stroke="#c9a227"></rect>
-      <path d="M50 24 68 50 50 76 32 50z" fill="#c9a227"></path></svg>
+    <svg class="gate-mark" viewBox="0 0 104 104" aria-hidden="true">
+      <polygon points="52,4 73,25 25,73 4,52" fill="#d8202a"/>
+      <polygon points="79,31 100,52 52,100 31,79" fill="#17191b"/></svg>
     <h1>Панель продавца</h1>
-    <p class="lead" id="gate-note">Вход для сотрудников. Здесь видны заявки дилеров и их статусы.</p>
+    <p class="lead">Вход для сотрудников отдела оптовых продаж. Здесь видны заявки дилеров,
+      их статусы и упаковочные листы.</p>
+    <div class="note error" id="gate-error" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16h.01"/></svg>
+      <span id="gate-error-text"></span>
+    </div>
     <form id="login-form" autocomplete="on">
-      <input id="user" placeholder="Логин" autocomplete="username">
-      <input id="pass" type="password" placeholder="Пароль" autocomplete="current-password">
+      <div class="field"><label for="user">Логин</label>
+        <input id="user" placeholder="Логин сотрудника" autocomplete="username" required></div>
+      <div class="field"><label for="pass">Пароль</label>
+        <span class="pw-wrap">
+          <input id="pass" type="password" placeholder="Пароль" autocomplete="current-password" required>
+          <button class="pw-eye" id="pw-eye" type="button" aria-label="Показать пароль" aria-pressed="false">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7"
+                 aria-hidden="true"><path d="M2 12s3.8-6.5 10-6.5S22 12 22 12s-3.8 6.5-10 6.5S2 12 2 12z"/>
+              <circle cx="12" cy="12" r="2.7"/></svg>
+          </button>
+        </span></div>
       <label class="remember"><input type="checkbox" id="remember" checked> Запомнить на этом устройстве</label>
-      <button class="btn primary wide" id="login" type="submit">Войти</button>
+      <button class="btn primary wide lg" id="login" type="submit">Войти</button>
     </form>
     <p class="gate-back"><a href="index.html">← Вернуться в каталог</a></p>
   </div>
 </section>
 
+<!-- ---------- панель ---------- -->
 <main class="wrap" id="app" hidden>
-  <div class="tabs" role="tablist">
-    <button class="tab" data-tab="orders" aria-selected="true">Заявки</button>
-    <button class="tab" data-tab="editor" aria-selected="false">Редактор каталога</button>
-  </div>
-
-  <section id="tab-orders">
-  <div class="kpis" id="kpis"></div>
-  <p class="lead" id="mode-note"></p>
-  <div class="paste-box" id="paste-box" hidden>
-    <input id="paste" placeholder="Вставьте ссылку на заявку из WhatsApp — она добавится в журнал">
-    <button class="btn" id="paste-btn">Добавить</button>
-  </div>
-
-  <div class="tools">
-    <input type="search" id="q" placeholder="Поиск: заказчик, телефон, артикул, номер" aria-label="Поиск">
-    <div class="chips" id="st" role="group">
-      <button class="chip" aria-pressed="true" data-v="">Все</button>
-      <button class="chip" data-v="new">Новые</button>
-      <button class="chip" data-v="work">В работе</button>
-      <button class="chip" data-v="done">Отгружены</button>
-      <button class="chip" data-v="cancel">Отменены</button>
+  <div class="panel-top">
+    <h1>Заявки дилеров</h1>
+    <span class="who-chip" id="who"></span>
+    <span class="upd" id="upd"></span>
+    <div class="right">
+      <button class="btn sm" id="refresh" type="button">Обновить</button>
+      <span class="menu-wrap">
+        <button class="btn sm" id="menu-btn" type="button" aria-haspopup="menu" aria-expanded="false">Ещё ▾</button>
+        <div class="menu" id="menu" role="menu" hidden>
+          <button type="button" id="csv" role="menuitem">Выгрузить CSV</button>
+          <button type="button" id="logout" role="menuitem">Выйти из панели</button>
+          <hr>
+          <button type="button" id="clearjournal" class="danger" role="menuitem" hidden>
+            Очистить журнал этого браузера</button>
+        </div>
+      </span>
     </div>
-    <button class="btn" id="csv">Выгрузить CSV</button>
-    <span class="count" id="count"></span>
   </div>
 
-  <div class="orders" id="orders"></div>
+  <div class="tabs" role="tablist">
+    <button class="tab" data-tab="orders" role="tab" aria-selected="true">Заявки</button>
+    <button class="tab" data-tab="editor" role="tab" aria-selected="false">Редактор каталога</button>
+  </div>
+
+  <section id="tab-orders" role="tabpanel">
+    <div class="kpis" id="kpis"></div>
+    <div class="note info" id="mode-note" hidden><span></span></div>
+    <div class="paste-box" id="paste-box" hidden>
+      <input id="paste" placeholder="Ссылка на заявку из WhatsApp — вставьте, и она попадёт в журнал"
+             aria-label="Ссылка на заявку">
+      <button class="btn" id="paste-btn" type="button">Добавить</button>
+    </div>
+
+    <div class="tools">
+      <label class="search">
+        <span class="visually-hidden">Поиск по заявкам</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="q" placeholder="Заказчик, телефон, артикул или номер заявки" autocomplete="off">
+      </label>
+      <div class="chips" id="st" role="group" aria-label="Статус заявки">
+        <button class="chip" type="button" aria-pressed="true" data-v="">Все</button>
+        <button class="chip" type="button" data-v="new">Новые</button>
+        <button class="chip" type="button" data-v="work">В работе</button>
+        <button class="chip" type="button" data-v="done">Отгружены</button>
+        <button class="chip" type="button" data-v="cancel">Отменены</button>
+      </div>
+      <span class="count" id="count" role="status"></span>
+    </div>
+
+    <div class="orders" id="orders"></div>
   </section>
 
-  <section id="tab-editor" hidden>
-    <div class="gate" id="ed-gate" style="min-height:auto;padding:30px 0">
+  <section id="tab-editor" role="tabpanel" hidden>
+    <div class="gate" id="ed-gate" style="min-height:auto;padding:24px 0">
       <div class="gate-card">
-        <h1 style="font-size:24px">Редактор каталога</h1>
-        <p class="lead">Фотографии портала лежат в его собственном репозитории. Чтобы их менять,
-          нужен GitHub-токен с правом записи в <b>almaly-dealers</b>. Он сохранится в этом браузере.</p>
+        <h2 class="gate-h">Редактор каталога</h2>
+        <p class="lead">Фотографии портала хранятся в его репозитории. Чтобы менять их,
+          нужен персональный токен GitHub с правом записи в <b>almaly-dealers</b>.
+          Токен сохранится только в этом браузере.</p>
         <form onsubmit="return false" autocomplete="off">
-          <input type="password" id="ed-token" placeholder="ghp_… или github_pat_…" autocomplete="off">
-          <button class="btn primary wide" id="ed-login" type="submit">Открыть редактор</button>
+          <div class="field"><label for="ed-token">Токен GitHub</label>
+            <span class="pw-wrap">
+              <input type="password" id="ed-token" placeholder="ghp_… или github_pat_…" autocomplete="off">
+              <button class="pw-eye" id="ed-eye" type="button" aria-label="Показать токен" aria-pressed="false">
+                <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7"
+                     aria-hidden="true"><path d="M2 12s3.8-6.5 10-6.5S22 12 22 12s-3.8 6.5-10 6.5S2 12 2 12z"/>
+                  <circle cx="12" cy="12" r="2.7"/></svg>
+              </button>
+            </span></div>
+          <button class="btn primary wide lg" id="ed-login" type="submit">Открыть редактор</button>
         </form>
         <p class="gate-back"><a href="https://github.com/settings/tokens/new?scopes=repo&description=Almaly%20dealers%20editor"
-           target="_blank">Создать токен →</a></p>
+           target="_blank" rel="noopener">Создать токен на GitHub →</a></p>
       </div>
     </div>
 
     <div class="layout" id="ed-app" hidden>
       <aside class="side-list">
-        <input type="search" id="ed-q" placeholder="Поиск модели или артикула" aria-label="Поиск">
+        <label class="search" style="position:relative;display:flex">
+          <span class="visually-hidden">Поиск модели</span>
+          <input type="search" id="ed-q" placeholder="Название или артикул" autocomplete="off">
+        </label>
         <div class="side-scroll" id="ed-list"></div>
       </aside>
       <div class="work" id="ed-work"></div>
@@ -94,8 +152,9 @@
 </main>
 
 <div id="sheet"></div>
-<div id="toast"></div>
-<script src="config.js?v=2608231555"></script>
-<script src="dnd.js?v=2608231555"></script>
-<script src="admin.js?v=2608231555"></script>
-<script src="editor.js?v=2608231555"></script>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="theme.js?v=2608272252"></script>
+<script src="config.js?v=2608272252"></script>
+<script src="dnd.js?v=2608272252"></script>
+<script src="admin.js?v=2608272252"></script>
+<script src="editor.js?v=2608272252"></script>

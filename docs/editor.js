@@ -97,7 +97,7 @@ function edDrawList() {
     return `<button class="item" data-art="${t.art}" aria-current="${t.art === ED.current}">
       ${ph.length ? `<img src="${edRaw(t.art, ph[0].f, ph[0].sha)}" alt="" loading="lazy">`
                   : '<span class="noimg">◇</span>'}
-      <span><b>${esc(t.name)}</b><small>${t.art}</small></span>
+      <span class="txt"><b>${esc(t.name)}</b><small>${t.art}</small></span>
       <span class="cnt">${ph.length || '—'}</span>
     </button>`;
   }).join('') || '<p class="lead" style="padding:8px">Ничего не найдено</p>';
@@ -106,7 +106,11 @@ function edDrawList() {
 function edDrawWork() {
   const t = edTiles.find(x => x.art === ED.current);
   const box = $('#ed-work');
-  if (!t) { box.innerHTML = '<p class="lead">Выберите модель слева, чтобы изменить её фотографии.</p>'; return; }
+  if (!t) {
+    box.innerHTML = `<div class="empty"><h3>Выберите модель</h3>
+      <p>Слева список каталога: найдите модель по названию или артикулу — справа откроются её фотографии.</p></div>`;
+    return;
+  }
 
   const shots = ED.draft.map((p, i) => {
     const src = p.preview || edRaw(t.art, p.f, p.sha);
@@ -124,28 +128,45 @@ function edDrawWork() {
     </div>`;
   }).join('');
 
+  const kept = ED.draft.filter(p => !p.deleted);
+  const cover = kept[0];
+  const coverSrc = cover ? (cover.preview || edRaw(t.art, cover.f, cover.sha)) : '';
+  const dirty = edDirty();
+
   box.innerHTML = `
     <div class="work-hd">
       <div>
-        <h3 style="margin:0;font-size:26px">${esc(t.name)}</h3>
-        <div class="art">${t.art} · ${t.format} · ${esc(t.surface)}</div>
+        <h3>${esc(t.name)}</h3>
+        <div class="art">${t.art} · ${t.format} см · ${esc(t.surface)}</div>
       </div>
       <div class="right">
-        <a class="btn" href="tile.html?a=${t.art}" target="_blank">Открыть в каталоге ↗</a>
+        <a class="btn sm" href="tile.html?a=${t.art}" target="_blank" rel="noopener">Открыть в каталоге ↗</a>
       </div>
     </div>
-    <p class="lead">Перетаскивайте фото мышью или пальцем — первое становится обложкой.
-      ★ — сразу в обложку, ✕ — удалить. Изменения попадут на сайт после кнопки «Сохранить».</p>
+
+    <div class="cover-preview">
+      ${coverSrc ? `<img src="${coverSrc}" alt="Обложка модели ${esc(t.name)}">`
+                 : '<span class="cp-none">обложки пока нет</span>'}
+      <div>
+        <b>Обложка карточки</b>
+        <p>Первое фото в списке — то, что дилер видит в каталоге. Перетащите фото мышью или пальцем,
+          чтобы изменить порядок, либо нажмите ★ на нужном.</p>
+        <p>Загружено фотографий: <b>${kept.length}</b>. Рекомендуем JPG, вертикальные,
+          не меньше 1000 px по длинной стороне — портал сам уменьшит их до 1600 px и сделает миниатюру.</p>
+      </div>
+    </div>
+
     <div class="shots" id="ed-shots" data-art="${t.art}">
       ${shots}
       <label class="drop"><b>＋</b>добавить фото<input type="file" accept="image/*" multiple hidden></label>
     </div>
+
     <div class="bar">
-      <span class="status ${edDirty() ? 'dirty' : ''}" id="ed-status">
-        ${edDirty() ? 'Есть несохранённые изменения' : 'Всё сохранено'}</span>
+      <span class="ed-state ${dirty ? 'dirty' : ''}" id="ed-status">
+        ${dirty ? 'Есть несохранённые изменения' : 'Всё сохранено и опубликовано'}</span>
       <span class="right">
-        <button class="btn" id="ed-reset" ${edDirty() ? '' : 'disabled'}>Отменить</button>
-        <button class="btn primary" id="ed-save" ${edDirty() ? '' : 'disabled'}>Сохранить</button>
+        <button class="btn" id="ed-reset" type="button" ${dirty ? '' : 'disabled'}>Отменить изменения</button>
+        <button class="btn primary" id="ed-save" type="button" ${dirty ? '' : 'disabled'}>Сохранить и опубликовать</button>
       </span>
     </div>`;
 }
@@ -162,7 +183,10 @@ function edSelect(art) {
 async function edSave() {
   if (ED.saving) return;
   const art = ED.current, keep = ED.draft.filter(p => !p.deleted);
-  ED.saving = true; $('#ed-save').disabled = true; $('#ed-status').textContent = 'Сохраняю…';
+  ED.saving = true; $('#ed-save').disabled = true; $('#ed-reset').disabled = true;
+  const st = $('#ed-status');
+  st.className = 'ed-state saving';
+  st.innerHTML = '<span class="spin" aria-hidden="true"></span>Публикую фотографии…';
   try {
     const ops = (ED.files[art] || []).flatMap(p => [
       {path: `docs/img/${art}/${p.f}`},
@@ -200,9 +224,9 @@ async function edSave() {
     await edLoadFiles();
     ED.draft = (ED.files[art] || []).map(p => ({...p, id: p.f}));
     edDrawList(); edDrawWork();
-    toast('Сохранено. Каталог обновится через 1–2 минуты.');
+    toast('Опубликовано. Каталог обновится через 1–2 минуты.', 'ok');
   } catch (e) {
-    toast('Не сохранилось: ' + e.message);
+    toast('Не сохранилось: ' + e.message + '. Изменения остались в редакторе — попробуйте ещё раз.', 'err');
     edDrawWork();
   } finally { ED.saving = false; }
 }
@@ -223,7 +247,7 @@ async function edStart() {
     edDrawList(); edDrawWork();
   } catch (e) {
     $('#ed-gate').hidden = false; $('#ed-app').hidden = true;
-    toast('Редактор не открылся: ' + e.message);
+    toast('Редактор не открылся: ' + e.message, 'err');
   }
 }
 
@@ -234,8 +258,14 @@ function initEditor() {
   edInited = true;
   $('#ed-login').addEventListener('click', () => {
     ED.token = $('#ed-token').value.trim();
-    if (!ED.token) return toast('Вставьте токен');
+    if (!ED.token) return toast('Вставьте токен GitHub', 'err');
     edStart();
+  });
+  $('#ed-eye').addEventListener('click', () => {
+    const i = $('#ed-token'), show = i.type === 'password';
+    i.type = show ? 'text' : 'password';
+    $('#ed-eye').setAttribute('aria-pressed', show);
+    $('#ed-eye').setAttribute('aria-label', show ? 'Скрыть токен' : 'Показать токен');
   });
   $('#ed-token').addEventListener('keydown', e => e.key === 'Enter' && $('#ed-login').click());
   $('#ed-q').addEventListener('input', edDrawList);
@@ -285,6 +315,6 @@ async function edAdd(files) {
       ED.draft.push({id: 'new-' + Math.random().toString(36).slice(2), full, thumb, preview});
     }
     edDrawWork();
-    toast('Добавлено. Не забудьте «Сохранить».');
+    toast('Фото добавлены. Нажмите «Сохранить и опубликовать».', 'ok');
   } catch (e) { toast(e.message); }
 }

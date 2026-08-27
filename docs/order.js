@@ -1,4 +1,4 @@
-/* Оформление заявки: позиции в м², данные дилера, отправка и упаковочный лист. */
+/* Оформление заявки: позиции в м², данные дилера, проверка полей, отправка и упаковочный лист. */
 const F = ['customer','inn','person','phone','email','city','delivery','address','payment','ship','note'];
 const formData = () => Object.fromEntries(F.map(k => [k, ($('#f-' + k)?.value || '').trim()]));
 const fmtDate = s => s ? new Date(s + 'T00:00:00').toLocaleDateString('ru-RU') : '—';
@@ -16,38 +16,49 @@ function orderNo() {
   return n;
 }
 
-/* ---------- позиции ---------- */
+/* ---------- позиции и итог ---------- */
 function renderItems() {
   const cart = getCart(), box = $('#items');
   if (!cart.length) {
-    box.innerHTML = `<div class="empty"><p>В заявке пока нет позиций.</p>
-      <a class="btn primary" href="index.html">Выбрать плитку в каталоге</a></div>`;
-    $('#summary').innerHTML = ''; renderSheet(); return;
+    box.innerHTML = `<div class="empty"><h3>В заявке пока нет позиций</h3>
+      <p>Выберите модели в каталоге и укажите нужную площадь — упаковки посчитаем автоматически.</p>
+      <a class="btn primary" href="index.html">Перейти в каталог</a></div>`;
+    renderSummary(); renderSheet(); return;
   }
-  const t = totals(cart);
   box.innerHTML = `<table class="items">
-    <thead><tr><th></th><th>Модель</th><th>Формат</th><th>Нужно, м²</th><th>Упаковок</th>
-      <th>К отгрузке, м²</th><th>Склад</th><th></th></tr></thead>
+    <thead><tr><th><span class="visually-hidden">Фото</span></th><th>Модель</th><th>Формат</th>
+      <th>Нужно, м²</th><th>Упаковок</th><th>К отгрузке</th><th>Склад</th>
+      <th><span class="visually-hidden">Убрать</span></th></tr></thead>
     <tbody>${cart.map((i, n) => `<tr>
-      <td data-l="">${i.photo ? `<img class="thumb" src="${i.photo}" alt="">` : '<span class="thumb noimg"></span>'}</td>
-      <td data-l="Модель"><b>${esc(i.name)}</b><div class="art">${i.art}</div></td>
-      <td data-l="Формат">${i.format}</td>
+      <td data-l="">${i.photo ? `<img class="thumb" src="${i.photo}" alt="" loading="lazy">`
+        : '<span class="thumb noimg"></span>'}</td>
+      <td data-l="Модель"><b>${esc(i.name)}</b><div class="art">${i.art} · ${esc(i.surface)}</div></td>
+      <td data-l="Формат">${i.format} см</td>
       <td data-l="Нужно, м²"><input class="qty" type="number" min="0.1" step="0.1" value="${i.need}"
-        data-n="${n}" data-k="need" inputmode="decimal"></td>
+        data-n="${n}" data-k="need" inputmode="decimal" aria-label="Нужно м²: ${esc(i.name)}"></td>
       <td data-l="Упаковок"><b>${i.packs}</b></td>
-      <td data-l="К отгрузке">${nf(i.packs * i.sqm)} м²</td>
-      <td data-l="Склад"><select data-n="${n}" data-k="wh">
+      <td data-l="К отгрузке">${nf(i.packs * i.sqm)} м²${i.kg ? ` · ${nf(i.packs * i.kg, 0)} кг` : ''}</td>
+      <td data-l="Склад"><select data-n="${n}" data-k="wh" aria-label="Склад: ${esc(i.name)}">
         ${['Москва','Тверь','Под заказ'].map(w => `<option ${w === i.wh ? 'selected' : ''}>${w}</option>`).join('')}
       </select></td>
-      <td data-l=""><button class="rm" data-rm="${n}" title="Убрать позицию">✕</button></td></tr>`).join('')}
+      <td data-l="" class="cell-rm"><button class="icon-btn danger" data-rm="${n}" type="button"
+        aria-label="Убрать ${esc(i.name)} из заявки">✕</button></td></tr>`).join('')}
     </tbody></table>`;
-  $('#summary').innerHTML = `<div class="summary">
-    <div><b>${cart.length}</b><span>позиций</span></div>
-    <div><b>${t.packs}</b><span>упаковок</span></div>
-    <div><b>${nf(t.sqm)}</b><span>м² к отгрузке</span></div>
-    ${t.kg ? `<div><b>${nf(t.kg, 0)}</b><span>кг ориентировочно</span></div>` : ''}
-  </div>`;
-  renderSheet();
+  renderSummary(); renderSheet();
+}
+
+function renderSummary() {
+  const cart = getCart(), t = totals(cart), box = $('#summary');
+  box.innerHTML = `
+    <h3>Итог заявки</h3>
+    <div class="sum-row"><span>Позиций</span><b>${cart.length}</b></div>
+    <div class="sum-row"><span>Упаковок</span><b>${t.packs}</b></div>
+    ${t.kg ? `<div class="sum-row"><span>Вес, ориентировочно</span><b>${nf(t.kg, 0)} кг</b></div>` : ''}
+    <div class="sum-row total"><span>К отгрузке</span><b>${nf(t.sqm)} м²</b></div>
+    <button class="btn primary wide lg" id="send" type="button" ${cart.length ? '' : 'disabled'}>
+      Отправить заявку</button>
+    <div class="note">Заявка — не мгновенный онлайн-заказ. Менеджер проверит остатки,
+      подтвердит цены и срок отгрузки.</div>`;
 }
 
 /* ---------- упаковочный лист ---------- */
@@ -56,8 +67,8 @@ function sheetHtml(o) {
   return `<div class="sheet">
     <div class="top">
       <div class="mark">
-        <svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="14" fill="#111"/>
-          <path d="M50 20 66 50 50 80 34 50z" fill="#c9a227"/></svg>
+        <svg viewBox="0 0 104 104" aria-hidden="true"><polygon points="52,4 73,25 25,73 4,52" fill="#d8202a"/>
+          <polygon points="79,31 100,52 52,100 31,79" fill="#17191b"/></svg>
         <div><h1>Заявка на отгрузку</h1>
           <div class="company">${COMPANY.name} · ${COMPANY.tagline}
             ${HAS_CONTACTS() ? `<br>${COMPANY.phone} · ${COMPANY.email}` : ''}</div>
@@ -97,7 +108,11 @@ function sheetHtml(o) {
 const currentOrder = () => ({no: orderNo(), ...formData(), items: getCart(),
   date: $('#f-date')?.value || today()});
 
-const renderSheet = () => $('#sheet').innerHTML = getCart().length ? sheetHtml(currentOrder()) : '';
+function renderSheet() {
+  const has = getCart().length > 0;
+  $('#sheet').innerHTML = has ? sheetHtml(currentOrder()) : '';
+  $('#sheet-title').hidden = !has;
+}
 
 const orderText = o => {
   const t = totals(o.items);
@@ -111,33 +126,69 @@ const orderText = o => {
   ].filter(Boolean).join('\n');
 };
 
-/* ---------- отправка ---------- */
+/* ---------- проверка полей ---------- */
+const digits = s => s.replace(/\D/g, '');
+/** Каждое правило говорит, что не так и что сделать. */
+const RULES = {
+  customer: v => v ? '' : 'Укажите наименование заказчика — так мы оформим документы.',
+  person:   v => v ? '' : 'Укажите, к кому обращаться менеджеру.',
+  phone:    v => !v ? 'Без телефона менеджер не сможет подтвердить заявку.'
+                    : digits(v).length < 10 ? 'Проверьте номер: нужно не меньше 10 цифр.' : '',
+  email:    v => !v || /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(v) ? '' : 'Проверьте адрес почты — похоже, в нём опечатка.',
+  inn:      v => !v || [10, 12].includes(digits(v).length) ? '' : 'ИНН состоит из 10 или 12 цифр.',
+};
+
+function showError(key, message) {
+  const field = document.querySelector(`.field[data-for="${key}"]`);
+  if (!field) return;
+  field.classList.toggle('invalid', !!message);
+  field.querySelector('.msg').textContent = message;
+  field.querySelector('input')?.setAttribute('aria-invalid', message ? 'true' : 'false');
+}
+
+function checkField(key) {
+  const el = $('#f-' + key); if (!el || !RULES[key]) return true;
+  const msg = RULES[key](el.value.trim());
+  showError(key, msg);
+  return !msg;
+}
+
 function validate() {
-  let ok = getCart().length > 0;
-  if (!ok) toast('Заявка пуста — выберите плитку в каталоге');
-  for (const k of ['customer', 'person', 'phone']) {
-    const el = $('#f-' + k), empty = !el.value.trim();
-    el.classList.toggle('err', empty);
-    if (empty) ok = false;
-  }
-  if (ok) return true;
-  const bad = $('.err'); if (bad) { bad.scrollIntoView({behavior: 'smooth', block: 'center'}); bad.focus(); }
-  toast('Заполните заказчика, контактное лицо и телефон');
+  const bad = Object.keys(RULES).filter(k => !checkField(k));
+  if (!getCart().length) { toast('Заявка пуста — выберите плитку в каталоге', 'err'); return false; }
+  if (!bad.length) return true;
+  const el = $('#f-' + bad[0]);
+  el.scrollIntoView({behavior: 'smooth', block: 'center'});
+  el.focus({preventScroll: true});
+  toast('Проверьте отмеченные поля', 'err');
   return false;
 }
 
+/** Телефон в привычном виде: +7 900 000-00-00, но исходные цифры не теряем. */
+function maskPhone(el) {
+  const d = digits(el.value).replace(/^8/, '7').slice(0, 11);
+  if (!d) { el.value = ''; return; }
+  const p = d.startsWith('7') ? d.slice(1) : d;
+  const parts = ['+7', p.slice(0, 3), p.slice(3, 6), p.slice(6, 8), p.slice(8, 10)].filter(Boolean);
+  el.value = parts[0] + (parts[1] ? ' ' + parts[1] : '') + (parts[2] ? ' ' + parts[2] : '') +
+    (parts[3] ? '-' + parts[3] : '') + (parts[4] ? '-' + parts[4] : '');
+}
+
+/* ---------- отправка ---------- */
 /** Ссылка на заявку для панели продавца: все данные внутри адреса, сервер не нужен. */
 const adminLink = o => location.origin + location.pathname.replace(/order\.html$/, 'admin.html') +
   '#o=' + btoa(unescape(encodeURIComponent(JSON.stringify(o))));
 
+let sending = false;
 async function submitOrder() {
-  if (!validate()) return;
+  if (sending || !validate()) return;
   const o = currentOrder();
   const btn = $('#send');
   if (!ORDERS_API) {          // приём заявок ещё не подключён — отдаём заявку ссылкой
     return done(o, 'Заявка сформирована. Отправьте её менеджеру кнопкой ниже.', adminLink(o));
   }
-  btn.disabled = true; btn.textContent = 'Отправляю…';
+  sending = true;
+  btn.disabled = true; btn.innerHTML = '<span class="spin" aria-hidden="true"></span>Отправляю…';
   try {
     // даты отправляем с апострофом: иначе таблица считает их своими датами и сдвигает
     const payload = {...o, date: "'" + o.date, ship: o.ship ? "'" + o.ship : ''};
@@ -145,78 +196,105 @@ async function submitOrder() {
       body: JSON.stringify({action: 'create', order: payload})});
     const d = await r.json();
     if (!d.ok) throw new Error(d.error || 'сервер отклонил заявку');
-    done({...o, no: d.no || o.no}, 'Заявка принята. Менеджер свяжется с вами.');
+    done({...o, no: d.no || o.no}, 'Менеджер свяжется с вами после проверки остатков.');
   } catch (e) {
+    sending = false;
     btn.disabled = false; btn.textContent = 'Отправить заявку';
-    toast('Не удалось отправить: ' + e.message + '. Можно отправить в WhatsApp.');
+    const offline = !navigator.onLine;
+    toast(offline ? 'Нет интернета — заявка не ушла. Проверьте связь и попробуйте снова.'
+                  : 'Не удалось отправить: ' + e.message + '. Попробуйте ещё раз или отправьте в WhatsApp.', 'err');
   }
 }
 
 /** Экран «заявка отправлена»: номер, печать листа, новая заявка. */
 function done(o, message, link) {
   localStorage.setItem('almaly_last_order', JSON.stringify(o));
+  const mine = JSON.parse(localStorage.getItem('almaly_my_orders') || '[]');
+  mine.unshift({no: o.no, date: o.date, sent: new Date().toISOString(), ...totals(o.items)});
+  localStorage.setItem('almaly_my_orders', JSON.stringify(mine.slice(0, 20)));
   localStorage.removeItem(CART); localStorage.removeItem('almaly_order_no');
   updateCount();
   $('#flow').innerHTML = `
     <div class="done">
-      <div class="done-mark">✓</div>
-      <h2>Заявка № ${esc(o.no)} отправлена</h2>
-      <p>${esc(message)} Сохраните упаковочный лист — он пригодится при отгрузке.</p>
-      <div class="actions" style="justify-content:center">
-        ${link && HAS_CONTACTS() ? '<button class="btn primary" id="send-wa">Отправить менеджеру в WhatsApp</button>' : ''}
-        <button class="btn" onclick="print()">Скачать PDF · упаковочный лист</button>
-        ${link ? '<button class="btn" id="copy-link">Скопировать ссылку</button>' : ''}
-        <a class="btn" href="index.html">Новая заявка</a>
+      <div class="done-mark"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M9 21l7.5 7.5L31 13"/></svg></div>
+      <h2>Заявка № ${esc(o.no)} принята</h2>
+      <p>${esc(message)} Сохраните упаковочный лист — он пригодится при отгрузке.
+        Номер заявки виден в разделе «Мои заявки» внизу страницы.</p>
+      <div class="actions">
+        ${link && HAS_CONTACTS() ? '<button class="btn primary" id="send-wa" type="button">Отправить менеджеру в WhatsApp</button>' : ''}
+        <button class="btn" onclick="print()" type="button">Печать и PDF</button>
+        ${link ? '<button class="btn" id="copy-link" type="button">Скопировать ссылку</button>' : ''}
+        <a class="btn ghost" href="index.html">Новая заявка</a>
       </div>
     </div>`;
   $('#sheet').innerHTML = sheetHtml(o);
+  $('#sheet-title').hidden = false;
+  renderMyOrders();
   $('#send-wa')?.addEventListener('click', () =>
     open(`https://wa.me/${COMPANY.whatsapp}?text=` +
       encodeURIComponent(orderText(o) + '\n\nЗаявка для панели продавца:\n' + link), '_blank'));
   $('#copy-link')?.addEventListener('click', async () => {
-    await navigator.clipboard.writeText(link);
-    toast('Ссылка скопирована — отправьте её менеджеру');
+    try { await navigator.clipboard.writeText(link); toast('Ссылка скопирована — отправьте её менеджеру', 'ok'); }
+    catch { prompt('Скопируйте ссылку на заявку:', link); }
   });
   scrollTo({top: 0, behavior: 'smooth'});
 }
 
 /* ---------- страница ---------- */
+/** История заявок этого дилера — чтобы не звонить менеджеру «а что с моим заказом». */
+function renderMyOrders() {
+  const box = $('#my-orders'); if (!box) return;
+  const mine = JSON.parse(localStorage.getItem('almaly_my_orders') || '[]');
+  box.innerHTML = !mine.length ? '' : `
+    <div class="section-title"><h2>Мои заявки</h2></div>
+    <div class="my-orders">${mine.map(o => `
+      <div class="my-order">
+        <b>№ ${esc(o.no)}</b>
+        <span class="when">от ${fmtDate((o.sent || '').slice(0, 10))}</span>
+        <span class="sum">${o.packs} уп. · ${nf(o.sqm)} м²</span>
+      </div>`).join('')}</div>`;
+}
+
 function renderOrder() {
-  updateCount();
+  updateCount(); renderFootContacts(); renderMyOrders();
   $('#f-date').value = today();
   F.forEach(k => {
     const el = $('#f-' + k); if (!el) return;
     const saved = localStorage.getItem('almaly_f_' + k);
     if (saved && !el.value) el.value = saved;
     el.addEventListener('input', e => {
+      if (k === 'phone') maskPhone(e.target);
       localStorage.setItem('almaly_f_' + k, e.target.value);
-      e.target.classList.remove('err'); renderSheet();
+      showError(k, '');
+      renderSheet();
     });
+    el.addEventListener('blur', () => checkField(k));
   });
+  if ($('#f-phone').value) maskPhone($('#f-phone'));
   renderItems();
 
   $('#items').addEventListener('input', e => {
     const el = e.target.closest('[data-k]'); if (!el) return;
     const cart = getCart(), i = cart[+el.dataset.n];
     if (el.dataset.k === 'need') {
-      i.need = Math.max(0.1, +String(el.value).replace(',', '.') || 0.1);
+      i.need = num(el.value);
       i.packs = packsFor(i.need, i.sqm);
     } else i.wh = el.value;
     setCart(cart); renderItems();
   });
   $('#items').addEventListener('click', e => {
     const b = e.target.closest('[data-rm]'); if (!b) return;
-    const cart = getCart(); cart.splice(+b.dataset.rm, 1); setCart(cart); renderItems();
+    const cart = getCart(), gone = cart.splice(+b.dataset.rm, 1)[0];
+    setCart(cart); renderItems();
+    toast(`${gone.name} убрана из заявки`);
   });
 
-  $('#send').addEventListener('click', submitOrder);
+  $('#summary').addEventListener('click', e => { if (e.target.closest('#send')) submitOrder(); });
   $('#pdf').addEventListener('click', () => validate() && print());
-  $('#wa')?.addEventListener('click', () => validate() &&
-    open(`https://wa.me/${COMPANY.whatsapp}?text=` + encodeURIComponent(orderText(currentOrder())), '_blank'));
   $('#clear').addEventListener('click', () => {
-    if (!confirm('Очистить заявку?')) return;
+    if (!getCart().length) return toast('Заявка и так пуста');
+    if (!confirm('Убрать все позиции из заявки?')) return;
     localStorage.removeItem(CART); localStorage.removeItem('almaly_order_no');
     renderItems(); updateCount(); toast('Заявка очищена');
   });
-  $('#send').textContent = 'Отправить заявку';
 }
