@@ -64,9 +64,9 @@
    "is_new": false,
    "stock": {
     "msk": 172.08,
-    "tver": 741.6,
+    "tver": 525.6,
     "msk_res": 0.0,
-    "tver_res": 0.0
+    "tver_res": 216.0
    },
    "photos": [
     "01",
@@ -370,7 +370,7 @@
    "pallet": "1пал-46,8м2-26 уп-884кг",
    "is_new": false,
    "stock": {
-    "msk": 7.92,
+    "msk": 0.0,
     "tver": 114.84,
     "msk_res": 0.0,
     "tver_res": 0.0
@@ -443,7 +443,7 @@
    "pallet": "1пал-46,8м2-26 уп-884кг",
    "is_new": false,
    "stock": {
-    "msk": 11.88,
+    "msk": 0.0,
     "tver": 0.0,
     "msk_res": 0.0,
     "tver_res": 0.0
@@ -466,9 +466,9 @@
    "pallet": "1пал-46,8м2-26 уп-884кг",
    "is_new": false,
    "stock": {
-    "msk": 100.44,
+    "msk": 6.84,
     "tver": 0.0,
-    "msk_res": 0.0,
+    "msk_res": 93.6,
     "tver_res": 0.0
    },
    "photos": [
@@ -552,30 +552,6 @@
     "07",
     "08",
     "09"
-   ]
-  },
-  {
-   "art": "VHF600227",
-   "name": "Хлоя",
-   "format": "60×60",
-   "surface": "Матовая",
-   "packing": "1 уп-5 шт-1,8 м2-34кг",
-   "pallet": "1пал-46,8м2-26 уп-884кг",
-   "is_new": false,
-   "stock": {
-    "msk": 189.36,
-    "tver": 1110.6,
-    "msk_res": 0.0,
-    "tver_res": 0.0
-   },
-   "photos": [
-    "01",
-    "02",
-    "03",
-    "04",
-    "05",
-    "06",
-    "07"
    ]
   },
   {
@@ -803,9 +779,9 @@
    "is_new": false,
    "stock": {
     "msk": 60.48,
-    "tver": 445.68,
+    "tver": 229.68,
     "msk_res": 0.0,
-    "tver_res": 0.0
+    "tver_res": 216.0
    },
    "photos": []
   },
@@ -819,9 +795,9 @@
    "is_new": false,
    "stock": {
     "msk": 104.4,
-    "tver": 1492.56,
+    "tver": 1276.56,
     "msk_res": 0.0,
-    "tver_res": 0.0
+    "tver_res": 216.0
    },
    "photos": []
   },
