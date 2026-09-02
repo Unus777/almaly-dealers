@@ -177,7 +177,7 @@ async function renderCatalog() {
       </div>
       <div class="b">
         <h3><a class="stretch" href="tile.html?a=${t.art}">${esc(t.name)}</a></h3>
-        <div class="row"><span class="art">${t.art}</span><span class="avail ${av.cls}">${av.text}</span></div>
+        <div class="row"><span class="avail ${av.cls}">${av.text}</span></div>
         <div class="meta"><span class="tag">${t.format} см</span><span class="tag">${esc(t.surface)}</span>
           <span class="tag">${nf(sqm)} м² / уп.</span></div>
         <div class="stock">${stockRow('Москва', t.stock.msk)}${stockRow('Тверь', t.stock.tver)}</div>
@@ -330,7 +330,7 @@ async function renderTile() {
       <a class="btn primary" href="index.html">Вернуться в каталог</a></div>`;
     return;
   }
-  document.title = `${t.name} ${t.art} — керамогранит ${t.format} см | Алмалы-Керамик`;
+  document.title = `${t.name} — керамогранит ${t.format} см | Алмалы-Керамик`;
   const {sqm, kg} = packInfo(t);
   const av = availability(t);
   const res = (t.stock.msk_res || 0) + (t.stock.tver_res || 0);
@@ -345,7 +345,7 @@ async function renderTile() {
       <div class="gallery">
         ${t.photos.length ? `
           <div class="main-ph"><img id="big" src="${img(t, 0)}"
-            alt="Керамогранит ${esc(t.name)}, артикул ${t.art}" decoding="async"></div>
+            alt="Керамогранит ${esc(t.name)}, ${t.format} см" decoding="async"></div>
           ${t.photos.length > 1 ? `<div class="thumbs" id="thumbs">${t.photos.map((p, i) =>
             `<button type="button" data-i="${i}" aria-current="${i === 0}" aria-label="Фото ${i + 1}">
                <img src="${img(t, i, true)}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}`
@@ -358,7 +358,6 @@ async function renderTile() {
           <span class="avail ${av.cls}">${av.text}</span>
         </div>
         <h1>${esc(t.name)}</h1>
-        <div class="art">Артикул ${t.art}</div>
 
         <div class="panel">
           <div class="panel-title">Характеристики</div>

@@ -32,7 +32,7 @@ function renderItems() {
     <tbody>${cart.map((i, n) => `<tr>
       <td data-l="">${i.photo ? `<img class="thumb" src="${i.photo}" alt="" loading="lazy">`
         : '<span class="thumb noimg"></span>'}</td>
-      <td data-l="Модель"><b>${esc(i.name)}</b><div class="art">${i.art} · ${esc(i.surface)}</div></td>
+      <td data-l="Модель"><b>${esc(i.name)}</b><div class="art">${i.format} см · ${esc(i.surface)}</div></td>
       <td data-l="Формат">${i.format} см</td>
       <td data-l="Нужно, м²"><input class="qty" type="number" min="0.1" step="0.1" value="${i.need}"
         data-n="${n}" data-k="need" inputmode="decimal" aria-label="Нужно м²: ${esc(i.name)}"></td>
@@ -89,13 +89,13 @@ function sheetHtml(o) {
       <div class="pair"><span>Желаемая отгрузка</span>${fmtDate(o.ship)}</div>
     </div>
     <table>
-      <thead><tr><th>№</th><th>Модель</th><th>Артикул</th><th>Формат</th><th>Поверхность</th>
+      <thead><tr><th>№</th><th>Модель</th><th>Формат</th><th>Поверхность</th>
         <th class="num">Упак.</th><th class="num">м²</th><th class="num">Вес, кг</th><th>Склад</th></tr></thead>
       <tbody>${(o.items || []).map((i, n) => `<tr>
-        <td>${n + 1}</td><td>${esc(i.name)}</td><td>${i.art}</td><td>${i.format}</td><td>${esc(i.surface)}</td>
+        <td>${n + 1}</td><td>${esc(i.name)}</td><td>${i.format}</td><td>${esc(i.surface)}</td>
         <td class="num">${i.packs}</td><td class="num">${nf(i.packs * i.sqm)}</td>
         <td class="num">${i.kg ? nf(i.packs * i.kg, 0) : '—'}</td><td>${esc(i.wh)}</td></tr>`).join('')}</tbody>
-      <tfoot><tr><td colspan="5">Итого</td><td class="num">${t.packs}</td><td class="num">${nf(t.sqm)}</td>
+      <tfoot><tr><td colspan="4">Итого</td><td class="num">${t.packs}</td><td class="num">${nf(t.sqm)}</td>
         <td class="num">${t.kg ? nf(t.kg, 0) : '—'}</td><td></td></tr></tfoot>
     </table>
     ${o.note ? `<div class="company"><b>Комментарий:</b> ${esc(o.note)}</div>` : ''}
@@ -119,7 +119,7 @@ const orderText = o => {
   return [`Заявка № ${o.no} от ${fmtDate(o.date)}`,
     `Заказчик: ${o.customer}${o.person ? ', ' + o.person : ''}${o.phone ? ', ' + o.phone : ''}`,
     o.city && `Город: ${o.city}`, '',
-    ...o.items.map((i, n) => `${n + 1}. ${i.name} (${i.art}) ${i.format} — ${i.packs} уп. / ${nf(i.packs * i.sqm)} м², ${i.wh}`),
+    ...o.items.map((i, n) => `${n + 1}. ${i.name}, ${i.format} — ${i.packs} уп. / ${nf(i.packs * i.sqm)} м², ${i.wh}`),
     '', `Итого: ${t.packs} уп. / ${nf(t.sqm)} м²${t.kg ? ' / ' + nf(t.kg, 0) + ' кг' : ''}`,
     `Доставка: ${o.delivery}${o.address ? ' — ' + o.address : ''}`, `Оплата: ${o.payment}`,
     o.ship && `Отгрузка: ${fmtDate(o.ship)}`, o.note && `Комментарий: ${o.note}`,

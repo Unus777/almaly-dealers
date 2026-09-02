@@ -119,7 +119,7 @@ const orderHtml = o => {
       <div class="o-goods">
         <div class="h">Состав заявки</div>
         <div class="o-items">${(o.items || []).map(i => `<div class="o-item">
-          <span class="nm"><b>${esc(i.name)}</b><span class="art">${i.art} · ${i.format} см</span></span>
+          <span class="nm"><b>${esc(i.name)}</b><span class="art">${i.format} см</span></span>
           <span class="v">${i.packs} уп.</span>
           <span class="v">${nf(i.packs * i.sqm)} м²</span>
           <span class="wh">${esc(i.wh)}</span></div>`).join('')}</div>
@@ -172,12 +172,12 @@ function printOrder(o) {
       <div class="pair"><span>Оплата</span>${esc(o.payment)}</div>
       <div class="pair"><span>Отгрузка</span>${fmtDate(o.ship)}</div>
     </div>
-    <table><thead><tr><th>№</th><th>Модель</th><th>Артикул</th><th>Формат</th>
+    <table><thead><tr><th>№</th><th>Модель</th><th>Формат</th>
       <th class="num">Упак.</th><th class="num">м²</th><th class="num">Вес, кг</th><th>Склад</th></tr></thead>
-      <tbody>${(o.items || []).map((i, n) => `<tr><td>${n + 1}</td><td>${esc(i.name)}</td><td>${i.art}</td>
+      <tbody>${(o.items || []).map((i, n) => `<tr><td>${n + 1}</td><td>${esc(i.name)}</td>
         <td>${i.format}</td><td class="num">${i.packs}</td><td class="num">${nf(i.packs * i.sqm)}</td>
         <td class="num">${i.kg ? nf(i.packs * i.kg, 0) : '—'}</td><td>${esc(i.wh)}</td></tr>`).join('')}</tbody>
-      <tfoot><tr><td colspan="4">Итого</td><td class="num">${t.packs}</td><td class="num">${nf(t.sqm)}</td>
+      <tfoot><tr><td colspan="3">Итого</td><td class="num">${t.packs}</td><td class="num">${nf(t.sqm)}</td>
         <td class="num">${t.kg ? nf(t.kg, 0) : '—'}</td><td></td></tr></tfoot></table>
     ${o.note ? `<div class="company"><b>Комментарий:</b> ${esc(o.note)}</div>` : ''}
     <div class="signs"><div>Заказчик / подпись</div><div>Менеджер поставщика / подпись</div></div>
@@ -186,7 +186,7 @@ function printOrder(o) {
 }
 
 const itemsText = o => [`Заявка № ${o.no} — ${o.customer}`,
-  ...(o.items || []).map((i, n) => `${n + 1}. ${i.name} (${i.art}) ${i.format} — ${i.packs} уп. / ${nf(i.packs * i.sqm)} м², ${i.wh}`),
+  ...(o.items || []).map((i, n) => `${n + 1}. ${i.name}, ${i.format} — ${i.packs} уп. / ${nf(i.packs * i.sqm)} м², ${i.wh}`),
   `Итого: ${totals(o.items).packs} уп. / ${nf(totals(o.items).sqm)} м²`].join('\n');
 
 async function copy(text, message) {

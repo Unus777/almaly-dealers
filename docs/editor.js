@@ -97,7 +97,7 @@ function edDrawList() {
     return `<button class="item" data-art="${t.art}" aria-current="${t.art === ED.current}">
       ${ph.length ? `<img src="${edRaw(t.art, ph[0].f, ph[0].sha)}" alt="" loading="lazy">`
                   : '<span class="noimg">◇</span>'}
-      <span class="txt"><b>${esc(t.name)}</b><small>${t.art}</small></span>
+      <span class="txt"><b>${esc(t.name)}</b><small>${t.format} см · ${esc(t.surface)}</small></span>
       <span class="cnt">${ph.length || '—'}</span>
     </button>`;
   }).join('') || '<p class="lead" style="padding:8px">Ничего не найдено</p>';
@@ -137,7 +137,7 @@ function edDrawWork() {
     <div class="work-hd">
       <div>
         <h3>${esc(t.name)}</h3>
-        <div class="art">${t.art} · ${t.format} см · ${esc(t.surface)}</div>
+        <div class="art">${t.format} см · ${esc(t.surface)}</div>
       </div>
       <div class="right">
         <a class="btn sm" href="tile.html?a=${t.art}" target="_blank" rel="noopener">Открыть в каталоге ↗</a>
