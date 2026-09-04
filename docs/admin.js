@@ -210,17 +210,63 @@ function csv() {
   toast('Файл CSV выгружен', 'ok');
 }
 
+/* ---------- уведомления о новых заявках ---------- */
+let knownNos = null;                       // null — список ещё не загружали
+
+/** Короткий сигнал: файл не нужен, звук синтезируем на месте. */
+function beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.18].forEach(delay => {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.type = 'sine'; osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + delay + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + 0.14);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + 0.16);
+    });
+    setTimeout(() => ctx.close(), 800);
+  } catch {}
+}
+
+/** Сравниваем список с прошлым: всё новое — звук, уведомление системы и подсказка на экране. */
+function noticeNew(list) {
+  const nos = list.map(o => o.no);
+  if (knownNos) {
+    const fresh = list.filter(o => !knownNos.includes(o.no));
+    if (fresh.length) {
+      beep();
+      const title = fresh.length === 1
+        ? `Новая заявка № ${fresh[0].no}` : `Новых заявок: ${fresh.length}`;
+      const body = fresh.map(o => `${o.customer} · ${totals(o.items).packs} уп.`).join('\n');
+      toast(title + ' — ' + body.split('\n')[0], 'ok');
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          const n = new Notification(title, {body, tag: 'almaly-order', renotify: true});
+          n.onclick = () => { window.focus(); n.close(); };
+        } catch {}
+      }
+      document.title = `(${fresh.length}) Панель продавца — Алмалы-Керамик`;
+    }
+  }
+  knownNos = nos;
+}
+addEventListener('focus', () => { document.title = 'Панель продавца — Алмалы-Керамик'; });
+
 /* ---------- загрузка ---------- */
 const stamp = () => $('#upd').textContent = 'обновлено ' +
   new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
 
 async function refresh(quiet) {
-  if (LOCAL) { orders = readLocal(); draw(); stamp(); if (!quiet) toast(`Заявок в журнале: ${orders.length}`); return; }
+  if (LOCAL) { orders = readLocal(); noticeNew(orders); draw(); stamp();
+    if (!quiet) toast(`Заявок в журнале: ${orders.length}`); return; }
   const btn = $('#refresh');
   if (!quiet) { btn.disabled = true; btn.textContent = 'Обновляю…'; }
   try {
     const d = await api({action: 'list'});
     orders = d.orders || [];
+    noticeNew(orders);
     draw(); stamp();
     if (!quiet) toast(`Загружено заявок: ${orders.length}`, 'ok');
   } catch (e) {
@@ -256,6 +302,7 @@ function showPanel() {
     if (f.q) $('#q').value = f.q;
     if (f.st) $('#st').querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.v === f.st));
   } catch {}
+  notifyState();
   if (!panelReady) {
     panelReady = true;
     initTabs();
@@ -323,6 +370,27 @@ $('#clearjournal').addEventListener('click', () => {
   localStorage.removeItem(JOURNAL); orders = []; draw(); toast('Журнал очищен');
 });
 $('#csv').addEventListener('click', () => { closeMenu(); csv(); });
+
+/** Системные уведомления браузер даёт только по явной просьбе сотрудника. */
+function notifyState() {
+  const btn = $('#notify-perm'); if (!btn) return;
+  if (!('Notification' in window)) { btn.hidden = true; return; }
+  btn.textContent = Notification.permission === 'granted'
+    ? 'Уведомления включены ✓'
+    : Notification.permission === 'denied'
+      ? 'Уведомления запрещены в браузере'
+      : 'Включить уведомления о заявках';
+}
+$('#notify-perm').addEventListener('click', async () => {
+  closeMenu();
+  if (!('Notification' in window)) return toast('Браузер не умеет системные уведомления', 'err');
+  if (Notification.permission === 'denied')
+    return toast('Уведомления запрещены в настройках браузера для этого сайта', 'err');
+  const res = await Notification.requestPermission();
+  notifyState();
+  if (res === 'granted') { beep(); toast('Готово: новые заявки будут приходить уведомлением', 'ok'); }
+  else toast('Уведомления не включены');
+});
 
 /* Заявку можно не открывать по ссылке, а вставить её сюда. */
 $('#paste-btn').addEventListener('click', () => {

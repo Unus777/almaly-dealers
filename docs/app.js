@@ -50,14 +50,23 @@ function revealOnScroll(root) {
   items.forEach(el => io.observe(el));
 }
 
-/** Контакты в подвале — только рабочие: заглушки не публикуем. */
+/** Адреса и контакты в подвале — по одной колонке на шоу-рум. */
 function renderFootContacts() {
-  const box = $('#foot-contacts-list'); if (!box) return;
-  box.innerHTML = HAS_CONTACTS()
-    ? `<li><a href="tel:${COMPANY.phone.replace(/[^+\d]/g, '')}">${esc(COMPANY.phone)}</a></li>
-       <li><a href="mailto:${esc(COMPANY.email)}">${esc(COMPANY.email)}</a></li>
-       <li><a href="https://wa.me/${COMPANY.whatsapp}" target="_blank" rel="noopener">WhatsApp</a></li>`
-    : `<li>Телефон и почта отдела появятся здесь после подключения рабочих контактов.</li>`;
+  const box = $('#foot-contacts'); if (!box) return;
+  const offices = typeof OFFICES !== 'undefined' ? OFFICES : [];
+  if (!offices.length) {
+    box.innerHTML = `<h4>Контакты</h4><ul><li>Адрес и телефоны отдела появятся здесь.</li></ul>`;
+    return;
+  }
+  box.outerHTML = offices.map(o => `
+    <div>
+      <h4>${esc(o.title)}</h4>
+      <ul>
+        <li>${esc(o.address)}</li>
+        ${o.phones.map(t => `<li><a href="tel:${t.replace(/[^+\d]/g, '')}">${esc(t)}</a></li>`).join('')}
+        <li><a href="mailto:${esc(o.email)}">${esc(o.email)}</a></li>
+      </ul>
+    </div>`).join('');
 }
 
 /* ---------- заявка ---------- */

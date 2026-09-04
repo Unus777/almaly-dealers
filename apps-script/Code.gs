@@ -6,6 +6,8 @@
  */
 var ADMIN_CODE = 'admin';                      // ← пароль продавца из docs/config.js (сейчас admin)
 var NOTIFY_EMAIL = '';                         // ← почта для уведомлений, можно оставить пустой
+var TELEGRAM_TOKEN = '';                       // ← токен бота от @BotFather, если нужны уведомления в Telegram
+var TELEGRAM_CHAT = '';                        // ← id чата или группы менеджеров
 var SHEET = 'Заявки';
 
 var HEAD = ['Номер', 'Получена', 'Статус', 'Дата заявки', 'Заказчик', 'ИНН', 'Контактное лицо',
@@ -41,6 +43,46 @@ function totals_(items) {
   return {packs: packs, sqm: Math.round(sqm * 100) / 100};
 }
 
+/** Уведомление менеджеру о новой заявке: Telegram и/или почта.
+ *  Сбой уведомления не должен ронять приём заявки — ошибки только пишем в журнал. */
+function notify_(no, o, t) {
+  var lines = [
+    'Новая заявка № ' + no,
+    o.customer + (o.person ? ', ' + o.person : ''),
+    'Телефон: ' + o.phone,
+    o.city ? 'Город: ' + o.city : '',
+    'Итого: ' + t.packs + ' уп. / ' + t.sqm + ' м²',
+    '',
+  ].filter(String).concat((o.items || []).map(function (i) {
+    return '• ' + i.name + ' ' + i.format + ' — ' + i.packs + ' уп., ' + i.wh;
+  }));
+  if (o.delivery) lines.push('', 'Доставка: ' + o.delivery + (o.address ? ' — ' + o.address : ''));
+  if (o.payment) lines.push('Оплата: ' + o.payment);
+  if (o.note) lines.push('Комментарий: ' + o.note);
+  var text = lines.join('\n');
+
+  if (TELEGRAM_TOKEN && TELEGRAM_CHAT) {
+    try {
+      UrlFetchApp.fetch('https://api.telegram.org/bot' + TELEGRAM_TOKEN + '/sendMessage', {
+        method: 'post', muteHttpExceptions: true,
+        payload: {chat_id: TELEGRAM_CHAT, text: text, disable_web_page_preview: 'true'}
+      });
+    } catch (err) { Logger.log('Telegram: ' + err); }
+  }
+  if (NOTIFY_EMAIL) {
+    try {
+      MailApp.sendEmail(NOTIFY_EMAIL, 'Заявка № ' + no + ' — ' + o.customer, text);
+    } catch (err) { Logger.log('Почта: ' + err); }
+  }
+}
+
+/** Проверка уведомлений: запустите один раз из редактора Apps Script. */
+function testNotify() {
+  notify_('АК-ТЕСТ-001', {customer: 'ООО «Проверка»', person: 'Тест', phone: '+7 900 000-00-00',
+    city: 'Москва', delivery: 'Самовывоз со склада', payment: 'Безналичный расчёт с НДС', note: 'Тестовое уведомление',
+    items: [{name: 'Айссноу', format: '60×120', packs: 10, wh: 'Москва'}]}, {packs: 10, sqm: 14.4});
+}
+
 function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(20000);
@@ -58,14 +100,7 @@ function doPost(e) {
         text_(o.person), text_(o.phone), text_(o.email), text_(o.city), text_(o.delivery),
         text_(o.address), text_(o.payment), "'" + (o.ship || ''), text_(o.note),
         t.packs, t.sqm, JSON.stringify(o.items)]);
-      if (NOTIFY_EMAIL) {
-        MailApp.sendEmail(NOTIFY_EMAIL, 'Заявка № ' + no + ' — ' + o.customer,
-          o.customer + ', ' + (o.person || '') + ', ' + o.phone + '\n' +
-          t.packs + ' уп. / ' + t.sqm + ' м²\n' +
-          (o.items || []).map(function (i) {
-            return i.name + ' (' + i.art + ') — ' + i.packs + ' уп., ' + i.wh;
-          }).join('\n'));
-      }
+      notify_(no, o, t);
       return json_({ok: true, no: no});
     }
 
