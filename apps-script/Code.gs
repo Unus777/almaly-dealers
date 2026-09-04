@@ -7,7 +7,7 @@
 var ADMIN_CODE = 'admin';                      // ← пароль продавца из docs/config.js (сейчас admin)
 var NOTIFY_EMAIL = '';                         // ← почта для уведомлений, можно оставить пустой
 var TELEGRAM_TOKEN = '';                       // ← токен бота от @BotFather, если нужны уведомления в Telegram
-var TELEGRAM_CHAT = '';                        // ← id чата или группы менеджеров
+var TELEGRAM_CHAT = '';                        // ← можно оставить пустым: скрипт сам определит чат
 var SHEET = 'Заявки';
 
 var HEAD = ['Номер', 'Получена', 'Статус', 'Дата заявки', 'Заказчик', 'ИНН', 'Контактное лицо',
@@ -43,6 +43,32 @@ function totals_(items) {
   return {packs: packs, sqm: Math.round(sqm * 100) / 100};
 }
 
+/** Куда слать в Telegram. Если TELEGRAM_CHAT не задан — берём из последнего сообщения боту
+ *  и запоминаем: достаточно один раз написать боту «Старт». */
+function chatId_() {
+  if (TELEGRAM_CHAT) return TELEGRAM_CHAT;
+  var props = PropertiesService.getScriptProperties();
+  var saved = props.getProperty('TELEGRAM_CHAT');
+  if (saved) return saved;
+  var r = UrlFetchApp.fetch('https://api.telegram.org/bot' + TELEGRAM_TOKEN + '/getUpdates',
+    {muteHttpExceptions: true});
+  var data = JSON.parse(r.getContentText() || '{}');
+  var chats = (data.result || []).map(function (u) {
+    var m = u.message || u.my_chat_member || u.channel_post || {};
+    return m.chat;
+  }).filter(function (c) { return c && c.id; });
+  if (!chats.length) return '';
+  var id = String(chats[chats.length - 1].id);
+  props.setProperty('TELEGRAM_CHAT', id);
+  return id;
+}
+
+/** Сбросить запомненный чат — если уведомления должны уходить в другое место. */
+function forgetChat() {
+  PropertiesService.getScriptProperties().deleteProperty('TELEGRAM_CHAT');
+  Logger.log('Чат забыт — следующее уведомление уйдёт туда, откуда боту написали последним');
+}
+
 /** Уведомление менеджеру о новой заявке: Telegram и/или почта.
  *  Сбой уведомления не должен ронять приём заявки — ошибки только пишем в журнал. */
 function notify_(no, o, t) {
@@ -61,12 +87,17 @@ function notify_(no, o, t) {
   if (o.note) lines.push('Комментарий: ' + o.note);
   var text = lines.join('\n');
 
-  if (TELEGRAM_TOKEN && TELEGRAM_CHAT) {
+  if (TELEGRAM_TOKEN) {
     try {
-      UrlFetchApp.fetch('https://api.telegram.org/bot' + TELEGRAM_TOKEN + '/sendMessage', {
-        method: 'post', muteHttpExceptions: true,
-        payload: {chat_id: TELEGRAM_CHAT, text: text, disable_web_page_preview: 'true'}
-      });
+      var chat = chatId_();
+      if (chat) {
+        UrlFetchApp.fetch('https://api.telegram.org/bot' + TELEGRAM_TOKEN + '/sendMessage', {
+          method: 'post', muteHttpExceptions: true,
+          payload: {chat_id: chat, text: text, disable_web_page_preview: 'true'}
+        });
+      } else {
+        Logger.log('Telegram: чат не найден — напишите боту любое сообщение и повторите');
+      }
     } catch (err) { Logger.log('Telegram: ' + err); }
   }
   if (NOTIFY_EMAIL) {
