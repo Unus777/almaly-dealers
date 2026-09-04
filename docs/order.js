@@ -210,7 +210,10 @@ async function submitOrder() {
 function done(o, message, link) {
   localStorage.setItem('almaly_last_order', JSON.stringify(o));
   const mine = JSON.parse(localStorage.getItem('almaly_my_orders') || '[]');
-  mine.unshift({no: o.no, date: o.date, sent: new Date().toISOString(), status: 'new', ...totals(o.items)});
+  mine.unshift({no: o.no, date: o.date, sent: new Date().toISOString(), status: 'new',
+    ...totals(o.items), items: o.items, delivery: o.delivery, address: o.address,
+    payment: o.payment, ship: o.ship, note: o.note, customer: o.customer, person: o.person,
+    phone: o.phone, email: o.email, inn: o.inn, city: o.city});
   localStorage.setItem('almaly_my_orders', JSON.stringify(mine.slice(0, 20)));
   localStorage.removeItem(CART); localStorage.removeItem('almaly_order_no');
   updateCount();
@@ -243,27 +246,104 @@ function done(o, message, link) {
 
 /* ---------- мои заявки и их статусы ---------- */
 const MINE = 'almaly_my_orders';
-const STATUS = {new: 'Новая', work: 'В работе', done: 'Отгружена', cancel: 'Отменена'};
+const STATUS = {new: 'Новая', work: 'В работе', done: 'Отгружена', cancel: 'Отменена',
+                gone: 'Не активна'};
+const STATUS_HINT = {
+  new: 'Менеджер её ещё не открывал',
+  work: 'Менеджер проверяет остатки и готовит отгрузку',
+  done: 'Отгружена со склада',
+  cancel: 'Заявка отменена — уточните причину у менеджера',
+  gone: 'Заявку убрали из журнала: она обработана или отменена. Уточните у менеджера',
+};
 const myOrders = () => { try { return JSON.parse(localStorage.getItem(MINE) || '[]'); } catch { return []; } };
+const saveMine = list => localStorage.setItem(MINE, JSON.stringify(list));
+const fmtSent = s => s ? new Date(s).toLocaleString('ru-RU',
+  {day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit'}) : '—';
 
-/** История заявок этого дилера — чтобы не звонить менеджеру «а что с моим заказом». */
+/** История заявок этого дилера — статус, состав, повтор и печать листа. */
 function renderMyOrders() {
   const box = $('#my-orders'); if (!box) return;
   const mine = myOrders();
   box.innerHTML = !mine.length ? '' : `
     <div class="section-title"><h2>Мои заявки</h2></div>
-    <p class="lead" style="margin-top:12px">Статус ставит менеджер в панели продавца.
-      ${ORDERS_API ? '<button class="link-btn" type="button" id="refresh-mine">Обновить статусы</button>' : ''}</p>
-    <div class="my-orders">${mine.map(o => `
-      <div class="my-order">
-        <b>№ ${esc(o.no)}</b>
-        <span class="when">от ${fmtDate((o.sent || '').slice(0, 10))}</span>
-        <span class="sum">${o.packs} уп. · ${nf(o.sqm)} м²</span>
-        ${o.status && STATUS[o.status]
-          ? `<span class="status s-${o.status}">${STATUS[o.status]}</span>`
-          : '<span class="status" title="Сервис ещё не сообщил статус">Статус уточняется</span>'}
-      </div>`).join('')}</div>`;
+    <div class="mine-head">
+      <p class="lead">Статус ставит менеджер. «Не активна» — заявку убрали из журнала:
+        она обработана или отменена.</p>
+      <span class="mine-act">
+        ${ORDERS_API ? '<button class="link-btn" type="button" id="refresh-mine">Обновить статусы</button>' : ''}
+        <button class="link-btn" type="button" id="clear-mine">Очистить историю</button>
+      </span>
+    </div>
+    <div class="my-orders">${mine.map((o, n) => {
+      const st = STATUS[o.status] ? o.status : '';
+      const items = o.items || [];
+      return `<article class="my-order ${o.status === 'gone' ? 'is-gone' : ''}">
+        <div class="mo-top">
+          <b>№ ${esc(o.no)}</b>
+          <span class="when">${fmtSent(o.sent)}</span>
+          <span class="status ${st ? 's-' + st : ''}" title="${esc(st ? STATUS_HINT[st] : 'Сервис ещё не сообщил статус')}">
+            ${st ? STATUS[st] : 'Статус уточняется'}</span>
+        </div>
+        <div class="mo-sum">
+          <span><b>${items.length || '—'}</b> позиц.</span>
+          <span><b>${o.packs}</b> уп.</span>
+          <span><b>${nf(o.sqm)}</b> м²</span>
+          ${o.kg ? `<span><b>${nf(o.kg, 0)}</b> кг</span>` : ''}
+          ${o.delivery ? `<span class="mo-way">${esc(o.delivery)}</span>` : ''}
+        </div>
+        ${items.length ? `
+          <details class="mo-items">
+            <summary>Состав заявки</summary>
+            <ul>${items.map(i => `<li>${esc(i.name)} · ${i.format} см — <b>${i.packs}</b> уп.
+              (${nf(i.packs * i.sqm)} м²), ${esc(i.wh)}</li>`).join('')}</ul>
+            ${o.note ? `<p class="mo-note">Комментарий: ${esc(o.note)}</p>` : ''}
+          </details>` : ''}
+        <div class="mo-act">
+          ${items.length ? `<button class="btn sm" type="button" data-repeat="${n}">Повторить заявку</button>
+            <button class="btn sm" type="button" data-sheet="${n}">Упаковочный лист</button>` : ''}
+          <button class="btn sm ghost" type="button" data-forget="${n}">Убрать из истории</button>
+        </div>
+      </article>`;
+    }).join('')}</div>`;
+
   $('#refresh-mine')?.addEventListener('click', () => trackMyOrders(true));
+  $('#clear-mine')?.addEventListener('click', () => {
+    if (!confirm('Очистить историю заявок на этом устройстве? Сами заявки у менеджера останутся.')) return;
+    localStorage.removeItem(MINE); renderMyOrders(); toast('История очищена');
+  });
+  box.querySelector('.my-orders')?.addEventListener('click', e => {
+    const b = e.target.closest('[data-repeat],[data-sheet],[data-forget]'); if (!b) return;
+    const list = myOrders();
+    if (b.dataset.repeat !== undefined) return repeatOrder(list[+b.dataset.repeat]);
+    if (b.dataset.sheet !== undefined) return printPast(list[+b.dataset.sheet]);
+    const gone = list.splice(+b.dataset.forget, 1)[0];
+    saveMine(list); renderMyOrders();
+    toast(`Заявка № ${gone.no} убрана из истории`);
+  });
+}
+
+/** Повтор заявки: те же позиции снова в корзину, данные заказчика уже сохранены в полях. */
+function repeatOrder(o) {
+  if (!o?.items?.length) return;
+  const cart = getCart();
+  o.items.forEach(i => {
+    const same = cart.find(x => x.art === i.art && x.wh === i.wh);
+    if (same) { same.packs += i.packs; same.need = +(same.need + i.need).toFixed(2); }
+    else cart.push({...i});
+  });
+  setCart(cart, true);
+  renderItems();
+  toast(`Позиции заявки № ${o.no} снова в заявке — проверьте объём`, 'ok');
+  scrollTo({top: 0, behavior: 'smooth'});
+}
+
+/** Печать листа по прошлой заявке — не заполняя форму заново. */
+function printPast(o) {
+  if (!o?.items?.length) return;
+  $('#sheet').innerHTML = sheetHtml(o);
+  $('#sheet-title').hidden = false;
+  print();
+  renderSheet();          // возвращаем на место текущий лист
 }
 
 /** Спрашиваем у сервиса статусы только своих номеров — личные данные при этом не передаются. */
@@ -278,10 +358,11 @@ async function trackMyOrders(loud) {
     if (!d.ok || !d.statuses) throw new Error(d.error || 'сервис не ответил');
     let changed = false;
     mine.forEach(o => {
-      const status = d.statuses[o.no];
-      if (status && status !== o.status) { o.status = status; changed = true; }
+      // номера нет в журнале — значит менеджер её удалил: помечаем «Не активна»
+      const status = d.statuses[o.no] || 'gone';
+      if (status !== o.status) { o.status = status; changed = true; }
     });
-    if (changed) localStorage.setItem(MINE, JSON.stringify(mine));
+    if (changed) saveMine(mine);
     renderMyOrders();
     if (loud) toast('Статусы обновлены', 'ok');
   } catch (e) {
